@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="brand_primary">#2C3E50</color> <color name="brand_on_primary">#FFFFFF</color>
+
+    <color name="brand_secondary">#1ABC9C</color> <color name="brand_on_secondary">#FFFFFF</color>
+
+    <color name="app_background">#F5F6FA</color>
+
+    <color name="card_surface">#FFFFFF</color>
+
+    <color name="text_primary">#1E272E</color>
+    <color name="text_secondary">#718093</color>
+    <color name="text_hint">#B2BEC3</color>
+
+    <color name="divider">#DCDDE1</color>
+    <color name="error_red">#E74C3C</color>
+
+    <color name="purple_200">@color/brand_secondary</color>
+    <color name="purple_500">@color/brand_primary</color>
+    <color name="purple_700">#1B2631</color>
+    <color name="teal_200">@color/brand_secondary</color>
+    <color name="teal_700">@color/brand_primary</color>
+    <color name="black">#1E272E</color>
+    <color name="white">#FFFFFF</color>
 </resources>
