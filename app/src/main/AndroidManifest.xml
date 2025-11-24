@@ -12,34 +12,31 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BookOn">
         <activity
-            android:name=".ReviewActivity"
+            android:name=".ui.ReviewActivity"
             android:exported="false" />
         <activity
-            android:name=".ScheduleActivity"
+            android:name=".ui.ScheduleActivity"
             android:exported="false" />
         <activity
-            android:name=".BookActivity"
+            android:name=".ui.BookActivity"
             android:exported="false" />
         <activity
-            android:name=".CreateActivity"
+            android:name=".ui.CreateActivity"
             android:exported="false" />
         <activity
-            android:name=".HomeActivity"
+            android:name=".ui.ProfileEditActivity"
             android:exported="false" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".ui.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".SignupActivity"
+            android:name=".ui.SignupActivity"
             android:exported="false" />
         <activity
-            android:name=".SplashActivity"
+            android:name=".ui.SplashActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ProfileEditActivity"
+            android:name=".ui.HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

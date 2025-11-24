@@ -7,7 +7,7 @@
     android:background="@color/app_background"
     android:orientation="vertical"
     android:padding="24dp"
-    tools:context=".SignupActivity">
+    tools:context=".ui.SignupActivity">
 
     <TextView
         android:id="@+id/tv_signup_title"

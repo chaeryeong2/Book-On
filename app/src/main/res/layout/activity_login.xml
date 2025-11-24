@@ -7,7 +7,7 @@
     android:background="@color/app_background"
     android:orientation="vertical"
     android:padding="24dp"
-    tools:context=".LoginActivity">
+    tools:context=".ui.LoginActivity">
 
     <ImageView
         android:id="@+id/iv_login_logo"
