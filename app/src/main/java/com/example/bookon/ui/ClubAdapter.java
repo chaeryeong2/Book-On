@@ -1,4 +1,4 @@
-package com.example.bookon.data;
+package com.example.bookon.ui;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.bookon.R;
+import com.example.bookon.data.Club;
 
 import java.util.ArrayList;
 

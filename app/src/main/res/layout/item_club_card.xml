@@ -56,7 +56,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_marginTop="12dp"
-            android:src="@drawable/ic_menu_book"
+            android:src="@drawable/ic_book"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider"
             app:tint="@color/brand_primary"
