@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BookOn">
         <activity
+            android:name=".ui.BaseActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.RecruitActivity"
             android:exported="false" />
         <activity

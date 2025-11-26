@@ -5,39 +5,41 @@ import android.os.Bundle;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.bookon.R;
 import com.example.bookon.data.Club;
 import com.example.bookon.data.DataManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton; // [추가]
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
-public class RecruitActivity extends AppCompatActivity {
+// [변경] AppCompatActivity -> BaseActivity 상속 변경
+public class RecruitActivity extends BaseActivity {
 
     private ListView lvRecruitList;
-    private FloatingActionButton fabCreateClub; // [추가]
+    private FloatingActionButton fabCreateClub;
     private ArrayList<Club> clubList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // BaseActivity의 super.onCreate()에서 다크 모드 설정을 미리 처리합니다.
+
         setContentView(R.layout.activity_recruit);
 
         // 1. 뷰 연결
         lvRecruitList = findViewById(R.id.lv_recruit_list);
-        fabCreateClub = findViewById(R.id.fab_create_club); // [추가] XML에 이 ID가 있어야 함
+        fabCreateClub = findViewById(R.id.fab_create_club); // 주의: activity_recruit.xml에 이 ID가 있어야 앱이 죽지 않습니다.
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
         // 2. 리스트 클릭 이벤트
         lvRecruitList.setOnItemClickListener((parent, view, position, id) -> {
             Club clickedClub = clubList.get(position);
             Toast.makeText(this, clickedClub.getName() + " 구경하기", Toast.LENGTH_SHORT).show();
+            // 상세 페이지 이동 로직은 추후 구현
         });
 
-        // 3. [추가] 모임 만들기 버튼 클릭 이벤트 (Home에서 이사옴)
+        // 3. 모임 만들기 버튼 클릭 이벤트
         fabCreateClub.setOnClickListener(v -> {
             Intent intent = new Intent(RecruitActivity.this, CreateActivity.class);
             startActivity(intent);
@@ -54,6 +56,7 @@ public class RecruitActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 return true;
             } else if (itemId == R.id.nav_recruit) {
+                // 이미 현재 화면
                 return true;
             } else if (itemId == R.id.nav_schedule) {
                 startActivity(new Intent(RecruitActivity.this, ScheduleActivity.class));

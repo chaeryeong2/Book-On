@@ -1,13 +1,9 @@
 package com.example.bookon.ui;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.ListView;
 import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.bookon.R;
 import com.example.bookon.data.Club;
@@ -16,7 +12,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseActivity {
 
     private ListView lvClubList;
     private ArrayList<Club> clubList;
@@ -25,18 +21,12 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 다크 모드 설정 적용
-        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
-        boolean isDark = prefs.getBoolean("DarkMode", false);
-        if (isDark) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
+        // [삭제됨] 기존에 있던 SharedPreferences 및 다크 모드 설정 코드는
+        // BaseActivity의 super.onCreate()에서 자동으로 처리하므로 삭제했습니다.
 
         setContentView(R.layout.activity_home);
 
-        // 1. 뷰 연결 (플로팅 버튼 제거됨)
+        // 1. 뷰 연결
         lvClubList = findViewById(R.id.lv_club_list);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
@@ -53,6 +43,7 @@ public class HomeActivity extends AppCompatActivity {
             int id = item.getItemId();
 
             if (id == R.id.nav_home) {
+                // 이미 홈 화면
                 return true;
             } else if (id == R.id.nav_recruit) {
                 startActivity(new Intent(HomeActivity.this, RecruitActivity.class));
