@@ -20,6 +20,8 @@ public class HomeActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        long userId = getIntent().getLongExtra("userId", -1);
+        // userId를 받아야만 내 정보에 닉네임, 한 줄 소개 로드 가능
 
         // [삭제됨] 기존에 있던 SharedPreferences 및 다크 모드 설정 코드는
         // BaseActivity의 super.onCreate()에서 자동으로 처리하므로 삭제했습니다.
@@ -54,7 +56,9 @@ public class HomeActivity extends BaseActivity {
                 overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_profile) {
-                startActivity(new Intent(HomeActivity.this, ProfileEditActivity.class));
+                Intent intent = new Intent(HomeActivity.this, ProfileEditActivity.class);
+                intent.putExtra("userId", userId);
+                startActivity(intent);
                 overridePendingTransition(0, 0);
                 return true;
             }
