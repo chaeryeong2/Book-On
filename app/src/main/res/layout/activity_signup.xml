@@ -65,55 +65,6 @@
         android:textColor="@color/text_primary"
         android:textColorHint="@color/text_hint" />
 
-    <EditText
-        android:id="@+id/et_signup_password_confirm"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_input_box"
-        android:drawableStart="@android:drawable/ic_lock_idle_lock"
-        android:drawablePadding="12dp"
-        android:hint="비밀번호 확인"
-        android:inputType="textPassword"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:textColor="@color/text_primary"
-        android:textColorHint="@color/text_hint" />
-
-    <TextView
-        android:id="@+id/tv_signup_error"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="비밀번호가 일치하지 않습니다."
-        android:textColor="@color/error_red"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <CheckBox
-            android:id="@+id/cb_terms"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:buttonTint="@color/brand_secondary"
-            android:text="" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="서비스 이용약관 및 개인정보 처리방침에 동의합니다. (필수)"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp" />
-    </LinearLayout>
-
 
     <FrameLayout
         android:layout_width="match_parent"

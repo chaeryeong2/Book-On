@@ -69,16 +69,6 @@
         android:textColor="@color/text_primary"
         android:textColorHint="@color/text_hint" />
 
-    <TextView
-        android:id="@+id/tv_login_error"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="아이디 또는 비밀번호가 일치하지 않습니다."
-        android:textColor="@color/error_red"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
