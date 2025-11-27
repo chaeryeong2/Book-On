@@ -75,6 +75,10 @@ public class LoginActivity extends BaseActivity {
             progressBar.setVisibility(View.GONE);
             long dbId = cursor.getLong(0); // DB의 고유 숫자 ID (users 테이블의 id)
 
+            getSharedPreferences("user", MODE_PRIVATE)
+                    .edit()
+                    .putLong("userId", dbId)
+                    .apply(); // userId 저장
             Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show();
 
             // -----------------------------------------------------------
@@ -88,7 +92,6 @@ public class LoginActivity extends BaseActivity {
             // -----------------------------------------------------------
 
             Intent intent = new Intent(this, HomeActivity.class);
-            intent.putExtra("userId", dbId); // 숫자 ID도 필요하면 넘김
             startActivity(intent);
             finish(); // 로그인 화면 종료 (뒤로가기 방지)
 
