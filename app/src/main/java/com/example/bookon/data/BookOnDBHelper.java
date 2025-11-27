@@ -6,13 +6,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class BookOnDBHelper extends SQLiteOpenHelper {
 
-    // [수정] 버전 4로 변경 (앱 재설치 필수!)
+    // [수정] 버전 5로 변경
     public BookOnDBHelper(Context context) {
-        super(context, "BookOn.db", null, 4);
+        super(context, "BookOn.db", null, 5);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // 1. 모임 테이블 (기존)
         db.execSQL("CREATE TABLE clubs(" +
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "name TEXT," +
@@ -22,7 +23,14 @@ public class BookOnDBHelper extends SQLiteOpenHelper {
                 "description TEXT," +
                 "status TEXT," +
                 "current_book TEXT," +
-                "owner_id TEXT)" // [수정] 0/1이 아니라 '아이디'를 저장
+                "owner_id TEXT)"
+        );
+
+        // 2. [추가] 멤버 테이블 (누가 어느 모임에 가입했는지 저장)
+        db.execSQL("CREATE TABLE members(" +
+                "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "user_id TEXT," +
+                "club_id INTEGER)"
         );
     }
 

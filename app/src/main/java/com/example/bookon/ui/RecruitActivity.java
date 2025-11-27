@@ -30,10 +30,12 @@ public class RecruitActivity extends BaseActivity {
         fabCreateClub = findViewById(R.id.fab_create_club);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
-        // 2. 리스트 클릭 이벤트
+        // 2. [수정] 리스트 클릭 이벤트 -> 상세 화면(ClubActivity) 연결
         lvRecruitList.setOnItemClickListener((parent, view, position, id) -> {
             Club clickedClub = clubList.get(position);
-            Toast.makeText(this, clickedClub.getName() + " 구경하기", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(RecruitActivity.this, ClubActivity.class);
+            intent.putExtra("club_id", clickedClub.getId());
+            startActivity(intent);
         });
 
         // 3. 모임 만들기 버튼 클릭 이벤트
