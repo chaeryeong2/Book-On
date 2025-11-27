@@ -1,6 +1,7 @@
 package com.example.bookon.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences; // [필수]
 import android.os.Bundle;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -20,13 +21,12 @@ public class HomeActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        long userId = getIntent().getLongExtra("userId", -1);
-        // userId를 받아야만 내 정보에 닉네임, 한 줄 소개 로드 가능
-
-        // [삭제됨] 기존에 있던 SharedPreferences 및 다크 모드 설정 코드는
-        // BaseActivity의 super.onCreate()에서 자동으로 처리하므로 삭제했습니다.
+        // BaseActivity에서 다크모드 등 기본 설정 처리됨
 
         setContentView(R.layout.activity_home);
+
+        long userIdFromIntent = getIntent().getLongExtra("userId", -1);
+        // 필요하다면 userIdFromIntent를 사용 (프로필 등)
 
         // 1. 뷰 연결
         lvClubList = findViewById(R.id.lv_club_list);
@@ -45,7 +45,6 @@ public class HomeActivity extends BaseActivity {
             int id = item.getItemId();
 
             if (id == R.id.nav_home) {
-                // 이미 홈 화면
                 return true;
             } else if (id == R.id.nav_recruit) {
                 startActivity(new Intent(HomeActivity.this, RecruitActivity.class));
@@ -57,7 +56,7 @@ public class HomeActivity extends BaseActivity {
                 return true;
             } else if (id == R.id.nav_profile) {
                 Intent intent = new Intent(HomeActivity.this, ProfileEditActivity.class);
-                intent.putExtra("userId", userId);
+                intent.putExtra("userId", userIdFromIntent); // 필요 시 넘김
                 startActivity(intent);
                 overridePendingTransition(0, 0);
                 return true;
@@ -73,7 +72,13 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void loadClubData() {
-        clubList = DataManager.getInstance(this).getMyClubList();
+        // [수정] LoginActivity에서 저장한 아이디("CurrentUserId")를 꺼내옵니다.
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        String currentUserId = prefs.getString("CurrentUserId", ""); // 없으면 빈 문자열
+
+        // [수정] 아이디를 DataManager에 전달 -> 내 모임만 필터링해서 가져옴
+        clubList = DataManager.getInstance(this).getMyClubList(currentUserId);
+
         ClubAdapter clubAdapter = new ClubAdapter(this, clubList);
         lvClubList.setAdapter(clubAdapter);
 
