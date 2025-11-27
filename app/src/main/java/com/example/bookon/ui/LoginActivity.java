@@ -1,6 +1,7 @@
 package com.example.bookon.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences; // [추가]
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -27,8 +28,6 @@ public class LoginActivity extends BaseActivity {
     LoginHelper userHelper;
     ProgressBar progressBar;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,44 +38,62 @@ public class LoginActivity extends BaseActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         etEmail = findViewById(R.id.et_email);
         etPw = findViewById(R.id.et_password);
         btnLogin = findViewById(R.id.btn_login);
         signUp = findViewById(R.id.tv_go_to_signup);
-        progressBar= findViewById(R.id.pb_login_loading);
+        progressBar = findViewById(R.id.pb_login_loading);
         userHelper = new LoginHelper(this);
-        btnLogin.setOnClickListener(v->loginUser());
 
-        signUp.setOnClickListener(v->{
+        btnLogin.setOnClickListener(v -> loginUser());
+
+        signUp.setOnClickListener(v -> {
             startActivity(new Intent(this, SignupActivity.class));
         });
-
     }
-    private void loginUser(){
-        progressBar.setVisibility(View.VISIBLE);
-        String id = etEmail.getText().toString().trim();
-        String pw = etPw.getText().toString().trim();
 
-        if(id.isEmpty() || pw.isEmpty()){
+    private void loginUser() {
+        progressBar.setVisibility(View.VISIBLE);
+        String idInput = etEmail.getText().toString().trim(); // 입력한 아이디 (String)
+        String pwInput = etPw.getText().toString().trim();
+
+        if (idInput.isEmpty() || pwInput.isEmpty()) {
             Toast.makeText(this, "아이디/비밀번호 입력해주세요.", Toast.LENGTH_SHORT).show();
+            progressBar.setVisibility(View.GONE); // 로딩 끄기
             return;
         }
 
         SQLiteDatabase db = userHelper.getReadableDatabase();
 
+        // username과 password가 일치하는지 확인
         String sql = "SELECT id FROM users WHERE username=? AND password=?";
-        Cursor cursor = db.rawQuery(sql, new String[]{id, pw});
+        Cursor cursor = db.rawQuery(sql, new String[]{idInput, pwInput});
 
-        if(cursor.moveToFirst()){
-            // 로그인 성공
+        if (cursor.moveToFirst()) {
+            // [로그인 성공]
             progressBar.setVisibility(View.GONE);
-            long userId = cursor.getLong(0);
+            long dbId = cursor.getLong(0); // DB의 고유 숫자 ID (users 테이블의 id)
+
             Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show();
 
+            // -----------------------------------------------------------
+            // [핵심 추가] 로그인한 아이디를 폰에 저장 (HomeActivity 등에서 쓰기 위해)
+            // -----------------------------------------------------------
+            SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            // DataManager가 String 아이디("ksk")로 비교하므로 입력한 idInput을 저장합니다.
+            editor.putString("CurrentUserId", idInput);
+            editor.apply(); // 저장 실행
+            // -----------------------------------------------------------
+
             Intent intent = new Intent(this, HomeActivity.class);
-            intent.putExtra("userId", userId);
+            intent.putExtra("userId", dbId); // 숫자 ID도 필요하면 넘김
             startActivity(intent);
+            finish(); // 로그인 화면 종료 (뒤로가기 방지)
+
         } else {
+            // [로그인 실패]
             progressBar.setVisibility(View.GONE);
             Toast.makeText(this, "아이디 또는 비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show();
         }

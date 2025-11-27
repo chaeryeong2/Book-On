@@ -1,6 +1,7 @@
 package com.example.bookon.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences; // [추가]
 import android.os.Bundle;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -13,7 +14,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
-// [변경] AppCompatActivity -> BaseActivity 상속 변경
 public class RecruitActivity extends BaseActivity {
 
     private ListView lvRecruitList;
@@ -23,20 +23,17 @@ public class RecruitActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // BaseActivity의 super.onCreate()에서 다크 모드 설정을 미리 처리합니다.
-
         setContentView(R.layout.activity_recruit);
 
         // 1. 뷰 연결
         lvRecruitList = findViewById(R.id.lv_recruit_list);
-        fabCreateClub = findViewById(R.id.fab_create_club); // 주의: activity_recruit.xml에 이 ID가 있어야 앱이 죽지 않습니다.
+        fabCreateClub = findViewById(R.id.fab_create_club);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
         // 2. 리스트 클릭 이벤트
         lvRecruitList.setOnItemClickListener((parent, view, position, id) -> {
             Club clickedClub = clubList.get(position);
             Toast.makeText(this, clickedClub.getName() + " 구경하기", Toast.LENGTH_SHORT).show();
-            // 상세 페이지 이동 로직은 추후 구현
         });
 
         // 3. 모임 만들기 버튼 클릭 이벤트
@@ -56,7 +53,6 @@ public class RecruitActivity extends BaseActivity {
                 overridePendingTransition(0, 0);
                 return true;
             } else if (itemId == R.id.nav_recruit) {
-                // 이미 현재 화면
                 return true;
             } else if (itemId == R.id.nav_schedule) {
                 startActivity(new Intent(RecruitActivity.this, ScheduleActivity.class));
@@ -78,7 +74,13 @@ public class RecruitActivity extends BaseActivity {
     }
 
     private void loadRecruitingData() {
-        clubList = DataManager.getInstance(this).getRecruitingClubs();
+        // [수정] 현재 로그인한 ID 가져오기
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        String currentUserId = prefs.getString("CurrentUserId", "testUser");
+
+        // [수정] ID를 넘겨줌
+        clubList = DataManager.getInstance(this).getRecruitingClubs(currentUserId);
+
         ClubAdapter adapter = new ClubAdapter(this, clubList);
         lvRecruitList.setAdapter(adapter);
 

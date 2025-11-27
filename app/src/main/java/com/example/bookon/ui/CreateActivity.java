@@ -1,6 +1,7 @@
 package com.example.bookon.ui;
 
 import android.app.DatePickerDialog;
+import android.content.SharedPreferences; // [추가]
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,9 +34,7 @@ public class CreateActivity extends AppCompatActivity {
         etDescription = findViewById(R.id.et_description);
         btnCreateClubSubmit = findViewById(R.id.btn_create_club_submit);
 
-
         etStartDate.setOnClickListener(v -> showDatePickerDialog(etStartDate));
-
         etEndDate.setOnClickListener(v -> showDatePickerDialog(etEndDate));
 
         btnCreateClubSubmit.setOnClickListener(v -> {
@@ -60,21 +59,22 @@ public class CreateActivity extends AppCompatActivity {
 
             Club newClub = new Club(name, capacity, startDate, endDate, description);
 
-            // DB에 저장 (DataManager 사용)
-            long result = DataManager.getInstance(CreateActivity.this).addNewClub(newClub);
+            // [수정] 현재 로그인한 사용자 ID 가져오기
+            SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+            String currentUserId = prefs.getString("CurrentUserId", "testUser"); // 기본값 testUser
+
+            // [수정] ID를 함께 넘겨줌
+            long result = DataManager.getInstance(CreateActivity.this).addNewClub(newClub, currentUserId);
 
             if (result != -1) {
-                // 저장 성공 시
                 Toast.makeText(CreateActivity.this, "모임이 생성되었습니다!", Toast.LENGTH_SHORT).show();
                 finish();
             } else {
-                // 저장 실패 시
                 Toast.makeText(CreateActivity.this, "모임 생성 실패 (DB 오류)", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // 날짜 선택 다이얼로그를 띄우는 함수
     private void showDatePickerDialog(final EditText editText) {
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);

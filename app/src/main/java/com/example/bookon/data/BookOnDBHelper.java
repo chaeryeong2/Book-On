@@ -6,14 +6,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class BookOnDBHelper extends SQLiteOpenHelper {
 
-    // [수정] DB 구조가 바뀌었으므로 버전을 2로 올림 (1 -> 2)
+    // [수정] 버전 4로 변경 (앱 재설치 필수!)
     public BookOnDBHelper(Context context) {
-        super(context, "BookOn.db", null, 2);
+        super(context, "BookOn.db", null, 4);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // [수정] status와 current_book 컬럼 추가
         db.execSQL("CREATE TABLE clubs(" +
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "name TEXT," +
@@ -21,8 +20,9 @@ public class BookOnDBHelper extends SQLiteOpenHelper {
                 "start_date TEXT," +
                 "end_date TEXT," +
                 "description TEXT," +
-                "status TEXT," +       // 추가됨
-                "current_book TEXT)"   // 추가됨
+                "status TEXT," +
+                "current_book TEXT," +
+                "owner_id TEXT)" // [수정] 0/1이 아니라 '아이디'를 저장
         );
     }
 

@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.bookon.R;
-import com.example.bookon.data.Club;
+import com.example.bookon.data.Club; // 패키지명 확인
 
 import java.util.ArrayList;
 
@@ -24,19 +24,13 @@ public class ClubAdapter extends BaseAdapter {
     }
 
     @Override
-    public int getCount() {
-        return clubList.size();
-    }
+    public int getCount() { return clubList.size(); }
 
     @Override
-    public Object getItem(int position) {
-        return clubList.get(position);
-    }
+    public Object getItem(int position) { return clubList.get(position); }
 
     @Override
-    public long getItemId(int position) {
-        return position;
-    }
+    public long getItemId(int position) { return position; }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -49,9 +43,12 @@ public class ClubAdapter extends BaseAdapter {
         TextView tvCurrentBook = convertView.findViewById(R.id.tv_current_book);
         TextView tvMemberCount = convertView.findViewById(R.id.tv_member_count);
         TextView tvClubStatus = convertView.findViewById(R.id.tv_club_status);
+
+        // [추가] 방장 배지 뷰 연결
+        TextView tvOwnerBadge = convertView.findViewById(R.id.tv_owner_badge);
+
         ImageView ivBookIcon = convertView.findViewById(R.id.iv_book_icon);
         ImageView ivMemberIcon = convertView.findViewById(R.id.iv_member_icon);
-
 
         Club club = clubList.get(position);
 
@@ -61,16 +58,22 @@ public class ClubAdapter extends BaseAdapter {
         String statusStr = club.getStatus();
         tvClubStatus.setText(statusStr);
 
-        // 상태에 따른 칩 색상 변경
+        // ---------------------------------------------------
+        // [추가] 내가 만든 모임이면 배지 보이기
+        // ---------------------------------------------------
+        if (club.isOwner()) {
+            tvOwnerBadge.setVisibility(View.VISIBLE);
+        } else {
+            tvOwnerBadge.setVisibility(View.GONE);
+        }
+
+        // 상태 칩 색상 변경
         if (statusStr.equals("모집중")) {
-            // 모집중 -> 파란색(Primary)
             tvClubStatus.setBackgroundTintList(context.getColorStateList(R.color.brand_primary));
         } else {
-            // 진행중 -> 민트색(Secondary)
             tvClubStatus.setBackgroundTintList(context.getColorStateList(R.color.brand_secondary));
         }
 
-        // 아이콘 색상 설정
         ivBookIcon.setColorFilter(context.getColor(R.color.brand_primary));
         ivMemberIcon.setColorFilter(context.getColor(R.color.text_secondary));
 
