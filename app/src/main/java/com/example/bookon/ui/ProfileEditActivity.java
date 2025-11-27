@@ -37,12 +37,20 @@ public class ProfileEditActivity extends BaseActivity {
         switchDark = findViewById(R.id.switch_dark_mode);
         userHelper = new LoginHelper(this);
 
-        userId = getIntent().getLongExtra("userId", -1);
+        userId = getSharedPreferences("user", MODE_PRIVATE)
+                .getLong("userId", -1);
+
         loadMyInfo();
 
         btnSave.setOnClickListener(v -> saveMyInfo());
 
         btnLogout.setOnClickListener(v -> {
+            // 저장된 userId 지우기
+            getSharedPreferences("user", MODE_PRIVATE)
+                    .edit()
+                    .clear()   // 또는 .remove("userId")
+                    .apply();
+
             Intent intent = new Intent(this, LoginActivity.class);
             // [추가] 로그아웃 시 뒤로 가기 막기 (선택 사항)
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

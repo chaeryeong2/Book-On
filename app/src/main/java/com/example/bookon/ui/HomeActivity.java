@@ -35,7 +35,9 @@ public class HomeActivity extends BaseActivity {
         // 2. 리스트 아이템 클릭 이벤트
         lvClubList.setOnItemClickListener((parent, view, position, id) -> {
             Club clickedClub = clubList.get(position);
-            Toast.makeText(HomeActivity.this, clickedClub.getName() + " 선택됨", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(HomeActivity.this, ClubDetailActivity.class);
+            intent.putExtra("club_id", clickedClub.getId());
+            startActivity(intent);
         });
 
         // 3. 하단 네비게이션 설정
