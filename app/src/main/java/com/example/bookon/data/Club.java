@@ -12,7 +12,7 @@ public class Club {
     private String status;
     private String currentBook;
 
-    // [추가] 방장 여부 (true면 내가 만든 모임)
+    // 방장 여부 (true면 내가 만든 모임)
     private boolean isOwner;
 
     public Club(String name, int capacity, String startDate, String endDate, String description) {
@@ -25,7 +25,7 @@ public class Club {
         // 생성 시 기본값 설정
         this.status = "모집중";
         this.currentBook = "선정 도서 없음";
-        this.isOwner = false; // 기본값은 false (DB에서 읽어올 때 true로 바꿈)
+        this.isOwner = false;
     }
 
     // --------------------------------------------------------
@@ -36,10 +36,19 @@ public class Club {
     public void setId(int id) { this.id = id; }
 
     public String getName() { return name; }
+    public void setName(String name) { this.name = name; } // [추가됨]
+
     public int getCapacity() { return capacity; }
+    public void setCapacity(int capacity) { this.capacity = capacity; } // [추가됨]
+
     public String getStartDate() { return startDate; }
+    public void setStartDate(String startDate) { this.startDate = startDate; } // [추가됨]
+
     public String getEndDate() { return endDate; }
+    public void setEndDate(String endDate) { this.endDate = endDate; } // [추가됨]
+
     public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; } // [추가됨]
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
@@ -47,7 +56,6 @@ public class Club {
     public String getCurrentBook() { return currentBook; }
     public void setCurrentBook(String currentBook) { this.currentBook = currentBook; }
 
-    // [추가] 방장 여부 확인 메서드
     public boolean isOwner() { return isOwner; }
     public void setOwner(boolean owner) { isOwner = owner; }
 }

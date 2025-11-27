@@ -24,10 +24,9 @@ public class DataManager {
         return instance;
     }
 
-    // ---------------------------------------------------------------
-    // INSERT: 모임 생성
-    // [수정] 누가 만들었는지 알기 위해 currentUserId를 받습니다.
-    // ---------------------------------------------------------------
+    // ===============================================================
+    // [C] CREATE: 모임 생성 (INSERT)
+    // ===============================================================
     public long addNewClub(Club club, String currentUserId) {
         ContentValues values = new ContentValues();
         values.put("name", club.getName());
@@ -36,101 +35,166 @@ public class DataManager {
         values.put("end_date", club.getEndDate());
         values.put("description", club.getDescription());
 
-        // 상태값 설정
+        // 상태값 설정 (없으면 기본값)
         values.put("status", club.getStatus() != null ? club.getStatus() : "모집중");
         values.put("current_book", club.getCurrentBook() != null ? club.getCurrentBook() : "선정 도서 없음");
 
-        // [핵심 수정] 1이 아니라 '만든 사람의 아이디'를 저장합니다.
-        // DB 테이블에 'owner_id' 컬럼이 있어야 합니다!
+        // 만든 사람 아이디 저장 (방장)
         values.put("owner_id", currentUserId);
 
         return database.insert("clubs", null, values);
     }
 
-    // ---------------------------------------------------------------
-    // SELECT 1: 모집 중인 모임 (RecruitActivity용)
-    // ---------------------------------------------------------------
+    // ===============================================================
+    // [C] JOIN: 모임 참여하기 (멤버 테이블에 추가)
+    // ===============================================================
+    public void joinClub(String userId, int clubId) {
+        ContentValues values = new ContentValues();
+        values.put("user_id", userId);
+        values.put("club_id", clubId);
+        database.insert("members", null, values);
+    }
+
+    // ===============================================================
+    // [R] READ: 조회 관련 메서드들
+    // ===============================================================
+
+    // 1. 모집 중인 모임 조회 (RecruitActivity용)
     public ArrayList<Club> getRecruitingClubs(String currentUserId) {
-        // 모집중인 것만 가져오기
-        // currentUserId를 넘기는 이유는 리스트 중에서 혹시 내가 만든게 있다면 표시하기 위함
+        // 조건: 상태가 '모집중'인 것
         return getClubsByQuery("status = ?", new String[]{"모집중"}, "_id DESC", currentUserId);
     }
 
-    // ---------------------------------------------------------------
-    // SELECT 2: 내가 참여 중인 모임 (HomeActivity용)
-    // ---------------------------------------------------------------
+    // 2. 내 모임 리스트 조회 (HomeActivity용)
+    // 조건: (내가 만든 모임) OR (내가 멤버로 가입한 모임)
     public ArrayList<Club> getMyClubList(String currentUserId) {
-        // [핵심 수정]
-        // 조건: (상태가 모집중이 아님 = 참여중) OR (만든 사람이 '나'인 경우)
-        // SQL: status != '모집중' OR owner_id = 'currentUserId'
+        // 복잡한 OR 조건과 서브쿼리가 필요하므로 rawQuery용 SQL 작성
+        String query = "SELECT * FROM clubs WHERE owner_id = ? " +
+                "OR _id IN (SELECT club_id FROM members WHERE user_id = ?) " +
+                "ORDER BY owner_id DESC, _id DESC"; // 내가 만든 것을 상단으로 정렬
 
-        String selection = "status != ? OR owner_id = ?";
-        String[] selectionArgs = new String[]{"모집중", currentUserId};
-
-        // 정렬: 최신순 (_id DESC)
-        // (참고: 문자열 ID로는 '내꺼 위로 정렬'이 SQL만으론 복잡하므로 일단 최신순으로 둡니다.
-        //  필요하면 자바 코드에서 정렬해야 합니다.)
-        String sortOrder = "_id DESC";
-
-        return getClubsByQuery(selection, selectionArgs, sortOrder, currentUserId);
-    }
-
-    // ---------------------------------------------------------------
-    // SELECT 공통 로직
-    // ---------------------------------------------------------------
-    private ArrayList<Club> getClubsByQuery(String selection, String[] selectionArgs, String sortOrder, String currentUserId) {
         ArrayList<Club> clubList = new ArrayList<>();
+        Cursor cursor = database.rawQuery(query, new String[]{currentUserId, currentUserId});
 
-        Cursor cursor = database.query(
-                "clubs",
-                null,
-                selection,
-                selectionArgs,
-                null, null,
-                sortOrder
-        );
-
+        // 커서에서 데이터 추출 (아래 공통 로직과 비슷하지만 rawQuery용으로 별도 작성)
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                int idIndex = cursor.getColumnIndex("_id");
-                int nameIndex = cursor.getColumnIndex("name");
-                int capacityIndex = cursor.getColumnIndex("capacity");
-                int startIndex = cursor.getColumnIndex("start_date");
-                int endIndex = cursor.getColumnIndex("end_date");
-                int descIndex = cursor.getColumnIndex("description");
-                int statusIndex = cursor.getColumnIndex("status");
-                int bookIndex = cursor.getColumnIndex("current_book");
-
-                // [수정] is_owner 대신 owner_id 컬럼을 읽습니다.
-                int ownerIdIndex = cursor.getColumnIndex("owner_id");
-
-                int id = cursor.getInt(idIndex);
-                String name = cursor.getString(nameIndex);
-                int capacity = cursor.getInt(capacityIndex);
-                String startDate = cursor.getString(startIndex);
-                String endDate = cursor.getString(endIndex);
-                String description = cursor.getString(descIndex);
-
-                String status = (statusIndex != -1) ? cursor.getString(statusIndex) : "모집중";
-                String currentBook = (bookIndex != -1) ? cursor.getString(bookIndex) : "";
-
-                // [핵심 로직] DB에 저장된 아이디와 현재 로그인한 아이디가 같은지 비교!
-                // DB에 저장된 owner_id가 없으면(null) 남의 것으로 처리
-                String dbOwnerId = (ownerIdIndex != -1) ? cursor.getString(ownerIdIndex) : "";
-                boolean isOwner = dbOwnerId != null && dbOwnerId.equals(currentUserId);
-
-                Club club = new Club(name, capacity, startDate, endDate, description);
-                club.setId(id);
-                club.setStatus(status);
-                club.setCurrentBook(currentBook);
-
-                // 계산된 결과(true/false)를 객체에 세팅
-                club.setOwner(isOwner);
-
-                clubList.add(club);
+                clubList.add(cursorToClub(cursor, currentUserId));
             } while (cursor.moveToNext());
             cursor.close();
         }
         return clubList;
+    }
+
+    // 3. ID로 특정 모임 하나만 조회 (상세 페이지용)
+    public Club getClubById(int clubId, String currentUserId) {
+        String selection = "_id = ?";
+        String[] selectionArgs = new String[]{String.valueOf(clubId)};
+
+        ArrayList<Club> result = getClubsByQuery(selection, selectionArgs, null, currentUserId);
+
+        if (!result.isEmpty()) {
+            return result.get(0);
+        }
+        return null;
+    }
+
+    // 4. 이미 참여한 멤버인지 확인 (중복 참여 방지)
+    public boolean checkIsMember(String userId, int clubId) {
+        String query = "SELECT _id FROM members WHERE user_id = ? AND club_id = ?";
+        Cursor cursor = database.rawQuery(query, new String[]{userId, String.valueOf(clubId)});
+        boolean isMember = false;
+        if (cursor.moveToFirst()) {
+            isMember = true;
+        }
+        cursor.close();
+        return isMember;
+    }
+
+    // ===============================================================
+    // [U] UPDATE: 모임 수정
+    // ===============================================================
+    public boolean updateClub(Club club) {
+        ContentValues values = new ContentValues();
+        values.put("name", club.getName());
+        values.put("capacity", club.getCapacity());
+        values.put("start_date", club.getStartDate());
+        values.put("end_date", club.getEndDate());
+        values.put("description", club.getDescription());
+        values.put("status", club.getStatus());
+        values.put("current_book", club.getCurrentBook());
+
+        // owner_id는 변경하지 않음
+
+        String whereClause = "_id = ?";
+        String[] whereArgs = new String[]{String.valueOf(club.getId())};
+
+        // 업데이트된 행의 개수가 0보다 크면 true
+        int rowsAffected = database.update("clubs", values, whereClause, whereArgs);
+        return rowsAffected > 0;
+    }
+
+    // ===============================================================
+    // [D] DELETE: 모임 삭제
+    // ===============================================================
+    public boolean deleteClub(int clubId) {
+        String whereClause = "_id = ?";
+        String[] whereArgs = new String[]{String.valueOf(clubId)};
+
+        // 삭제된 행의 개수가 0보다 크면 true
+        int rowsDeleted = database.delete("clubs", whereClause, whereArgs);
+        return rowsDeleted > 0;
+    }
+
+    // ===============================================================
+    // Private Helpers (중복 코드 제거)
+    // ===============================================================
+
+    // 공통 쿼리 실행기 (단순 WHERE 조건용)
+    private ArrayList<Club> getClubsByQuery(String selection, String[] selectionArgs, String sortOrder, String currentUserId) {
+        ArrayList<Club> clubList = new ArrayList<>();
+        Cursor cursor = database.query("clubs", null, selection, selectionArgs, null, null, sortOrder);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                clubList.add(cursorToClub(cursor, currentUserId));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return clubList;
+    }
+
+    // 커서에서 데이터를 꺼내 Club 객체로 변환하는 메서드
+    private Club cursorToClub(Cursor cursor, String currentUserId) {
+        int idIndex = cursor.getColumnIndex("_id");
+        int nameIndex = cursor.getColumnIndex("name");
+        int capacityIndex = cursor.getColumnIndex("capacity");
+        int startIndex = cursor.getColumnIndex("start_date");
+        int endIndex = cursor.getColumnIndex("end_date");
+        int descIndex = cursor.getColumnIndex("description");
+        int statusIndex = cursor.getColumnIndex("status");
+        int bookIndex = cursor.getColumnIndex("current_book");
+        int ownerIdIndex = cursor.getColumnIndex("owner_id");
+
+        int id = cursor.getInt(idIndex);
+        String name = cursor.getString(nameIndex);
+        int capacity = cursor.getInt(capacityIndex);
+        String startDate = cursor.getString(startIndex);
+        String endDate = cursor.getString(endIndex);
+        String description = cursor.getString(descIndex);
+        String status = (statusIndex != -1) ? cursor.getString(statusIndex) : "모집중";
+        String currentBook = (bookIndex != -1) ? cursor.getString(bookIndex) : "";
+
+        // 방장 여부 확인 (DB의 owner_id와 현재 로그인한 ID 비교)
+        String dbOwnerId = (ownerIdIndex != -1) ? cursor.getString(ownerIdIndex) : "";
+        boolean isOwner = dbOwnerId != null && dbOwnerId.equals(currentUserId);
+
+        Club club = new Club(name, capacity, startDate, endDate, description);
+        club.setId(id);
+        club.setStatus(status);
+        club.setCurrentBook(currentBook);
+        club.setOwner(isOwner);
+
+        return club;
     }
 }

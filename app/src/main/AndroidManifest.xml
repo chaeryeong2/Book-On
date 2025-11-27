@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BookOn">
         <activity
+            android:name=".ui.EditClubActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.ClubActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.BaseActivity"
             android:exported="false" />
         <activity
