@@ -2,6 +2,7 @@ package com.example.bookon.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageButton; // [추가]
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ public class BookListActivity extends AppCompatActivity {
     private FloatingActionButton fabCreateClub;
     TextView clubName;
     private ListView lvBooks;
+    private ImageButton btnBack; // [추가]
 
     private BookDBHelper dbHelper;
     private BookAdapter adapter;
@@ -33,6 +35,11 @@ public class BookListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_book_list);
+
+        // [추가] 뒤로가기 버튼 연결 (activity_book_list.xml에 이 ID가 있어야 함)
+        btnBack = findViewById(R.id.btn_back);
+        btnBack.setOnClickListener(v -> finish()); // 뒤로가기 기능
+
         // 독서 모임 이름
         clubName = findViewById(R.id.tv_club_name);
         String name = getIntent().getStringExtra("club_name");
@@ -57,7 +64,6 @@ public class BookListActivity extends AppCompatActivity {
                 if (deleted > 0) {
                     bookList.remove(position);
                     adapter.notifyDataSetChanged();
-                    // 삭제 완료 안내
                     Toast.makeText(BookListActivity.this, "책을 삭제했습니다.", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(BookListActivity.this, "삭제 실패했습니다.", android.widget.Toast.LENGTH_SHORT).show();
