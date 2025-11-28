@@ -211,6 +211,19 @@
                 </LinearLayout>
 
                 <Button
+                    android:id="@+id/btn_start_club"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="@color/brand_primary"
+                    android:text="🚀 모임 시작 및 일정 만들기"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <Button
                     android:id="@+id/btn_join_club"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"

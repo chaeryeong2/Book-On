@@ -56,27 +56,50 @@ public class DataManager {
     }
 
     // ===============================================================
+    // [U] SCHEDULE: 일정 및 순서 확정 (ScheduleSetupActivity용)
+    // [추가됨]
+    // ===============================================================
+    public void setClubSchedule(int clubId, String startDate, int cycleWeeks, ArrayList<String> memberIds) {
+        // 1. 클럽 테이블 업데이트 (시작일, 주기, 상태 변경)
+        ContentValues clubValues = new ContentValues();
+        clubValues.put("schedule_start", startDate);
+        clubValues.put("cycle_weeks", cycleWeeks);
+        clubValues.put("status", "진행중"); // 시작하면 진행중으로 변경
+
+        String whereClause = "_id = ?";
+        String[] whereArgs = new String[]{String.valueOf(clubId)};
+        database.update("clubs", clubValues, whereClause, whereArgs);
+
+        // 2. 멤버 테이블 업데이트 (순서 저장)
+        // memberIds 리스트에 들어있는 순서대로 1, 2, 3... 부여
+        for (int i = 0; i < memberIds.size(); i++) {
+            ContentValues memberValues = new ContentValues();
+            memberValues.put("sequence", i + 1); // 1번부터 시작
+
+            String memWhere = "club_id = ? AND user_id = ?";
+            String[] memArgs = new String[]{String.valueOf(clubId), memberIds.get(i)};
+            database.update("members", memberValues, memWhere, memArgs);
+        }
+    }
+
+    // ===============================================================
     // [R] READ: 조회 관련 메서드들
     // ===============================================================
 
     // 1. 모집 중인 모임 조회 (RecruitActivity용)
     public ArrayList<Club> getRecruitingClubs(String currentUserId) {
-        // 조건: 상태가 '모집중'인 것
         return getClubsByQuery("status = ?", new String[]{"모집중"}, "_id DESC", currentUserId);
     }
 
     // 2. 내 모임 리스트 조회 (HomeActivity용)
-    // 조건: (내가 만든 모임) OR (내가 멤버로 가입한 모임)
     public ArrayList<Club> getMyClubList(String currentUserId) {
-        // 복잡한 OR 조건과 서브쿼리가 필요하므로 rawQuery용 SQL 작성
         String query = "SELECT * FROM clubs WHERE owner_id = ? " +
                 "OR _id IN (SELECT club_id FROM members WHERE user_id = ?) " +
-                "ORDER BY owner_id DESC, _id DESC"; // 내가 만든 것을 상단으로 정렬
+                "ORDER BY owner_id DESC, _id DESC";
 
         ArrayList<Club> clubList = new ArrayList<>();
         Cursor cursor = database.rawQuery(query, new String[]{currentUserId, currentUserId});
 
-        // 커서에서 데이터 추출 (아래 공통 로직과 비슷하지만 rawQuery용으로 별도 작성)
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 clubList.add(cursorToClub(cursor, currentUserId));
@@ -111,6 +134,20 @@ public class DataManager {
         return isMember;
     }
 
+    // 5. 멤버 리스트 가져오기 (순서가 있으면 순서대로, 없으면 가입순) [추가됨]
+    public ArrayList<String> getClubMemberIds(int clubId) {
+        ArrayList<String> members = new ArrayList<>();
+        // sequence가 0이 아니면 sequence순, 아니면 _id순
+        String query = "SELECT user_id FROM members WHERE club_id = ? ORDER BY CASE WHEN sequence > 0 THEN sequence ELSE 999 END, _id ASC";
+        Cursor cursor = database.rawQuery(query, new String[]{String.valueOf(clubId)});
+
+        while (cursor.moveToNext()) {
+            members.add(cursor.getString(0));
+        }
+        cursor.close();
+        return members;
+    }
+
     // ===============================================================
     // [U] UPDATE: 모임 수정
     // ===============================================================
@@ -124,12 +161,9 @@ public class DataManager {
         values.put("status", club.getStatus());
         values.put("current_book", club.getCurrentBook());
 
-        // owner_id는 변경하지 않음
-
         String whereClause = "_id = ?";
         String[] whereArgs = new String[]{String.valueOf(club.getId())};
 
-        // 업데이트된 행의 개수가 0보다 크면 true
         int rowsAffected = database.update("clubs", values, whereClause, whereArgs);
         return rowsAffected > 0;
     }
@@ -141,7 +175,6 @@ public class DataManager {
         String whereClause = "_id = ?";
         String[] whereArgs = new String[]{String.valueOf(clubId)};
 
-        // 삭제된 행의 개수가 0보다 크면 true
         int rowsDeleted = database.delete("clubs", whereClause, whereArgs);
         return rowsDeleted > 0;
     }
@@ -150,7 +183,6 @@ public class DataManager {
     // Private Helpers (중복 코드 제거)
     // ===============================================================
 
-    // 공통 쿼리 실행기 (단순 WHERE 조건용)
     private ArrayList<Club> getClubsByQuery(String selection, String[] selectionArgs, String sortOrder, String currentUserId) {
         ArrayList<Club> clubList = new ArrayList<>();
         Cursor cursor = database.query("clubs", null, selection, selectionArgs, null, null, sortOrder);
@@ -164,7 +196,6 @@ public class DataManager {
         return clubList;
     }
 
-    // 커서에서 데이터를 꺼내 Club 객체로 변환하는 메서드
     private Club cursorToClub(Cursor cursor, String currentUserId) {
         int idIndex = cursor.getColumnIndex("_id");
         int nameIndex = cursor.getColumnIndex("name");
@@ -176,6 +207,10 @@ public class DataManager {
         int bookIndex = cursor.getColumnIndex("current_book");
         int ownerIdIndex = cursor.getColumnIndex("owner_id");
 
+        // [추가됨] 일정 관련 컬럼 읽기
+        int scheduleStartIndex = cursor.getColumnIndex("schedule_start");
+        int cycleWeeksIndex = cursor.getColumnIndex("cycle_weeks");
+
         int id = cursor.getInt(idIndex);
         String name = cursor.getString(nameIndex);
         int capacity = cursor.getInt(capacityIndex);
@@ -185,7 +220,10 @@ public class DataManager {
         String status = (statusIndex != -1) ? cursor.getString(statusIndex) : "모집중";
         String currentBook = (bookIndex != -1) ? cursor.getString(bookIndex) : "";
 
-        // 방장 여부 확인 (DB의 owner_id와 현재 로그인한 ID 비교)
+        // [추가됨] 일정 데이터 추출 (없으면 null 또는 0)
+        String scheduleStart = (scheduleStartIndex != -1) ? cursor.getString(scheduleStartIndex) : null;
+        int cycleWeeks = (cycleWeeksIndex != -1) ? cursor.getInt(cycleWeeksIndex) : 0;
+
         String dbOwnerId = (ownerIdIndex != -1) ? cursor.getString(ownerIdIndex) : "";
         boolean isOwner = dbOwnerId != null && dbOwnerId.equals(currentUserId);
 
@@ -194,6 +232,10 @@ public class DataManager {
         club.setStatus(status);
         club.setCurrentBook(currentBook);
         club.setOwner(isOwner);
+
+        // [추가됨] 일정 데이터 세팅 (Club.java에 Setter 필요)
+        club.setScheduleStart(scheduleStart);
+        club.setCycleWeeks(cycleWeeks);
 
         return club;
     }

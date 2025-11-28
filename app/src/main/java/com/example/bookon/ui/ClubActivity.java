@@ -25,8 +25,8 @@ public class ClubActivity extends AppCompatActivity {
 
     // UI 요소
     private LinearLayout layoutOwnerActions;
-    private Button btnEdit, btnDelete, btnJoin; // btnJoin 추가
-    private ImageButton btnBack; // [추가]
+    private Button btnEdit, btnDelete, btnJoin, btnStart; // [추가] btnStart
+    private ImageButton btnBack;
     private TextView tvName, tvStatus, tvBook, tvCapacity, tvDate, tvDesc;
 
     @Override
@@ -52,28 +52,40 @@ public class ClubActivity extends AppCompatActivity {
         layoutOwnerActions = findViewById(R.id.layout_owner_actions);
         btnEdit = findViewById(R.id.btn_edit_club);
         btnDelete = findViewById(R.id.btn_delete_club);
-        btnJoin = findViewById(R.id.btn_join_club); // [추가]
-        btnBack = findViewById(R.id.btn_back); // [추가]
+        btnJoin = findViewById(R.id.btn_join_club);
+        btnBack = findViewById(R.id.btn_back);
+        btnStart = findViewById(R.id.btn_start_club); // [추가] 시작 버튼 연결
 
-        // 버튼 리스너
+        // ---------------------------------------------------------------
+        // 버튼 리스너 설정
+        // ---------------------------------------------------------------
+
+        // 뒤로가기
+        btnBack.setOnClickListener(v -> finish());
+
+        // 삭제하기
         btnDelete.setOnClickListener(v -> deleteClub());
+
+        // 수정하기
         btnEdit.setOnClickListener(v -> {
             Intent intent = new Intent(ClubActivity.this, EditClubActivity.class);
             intent.putExtra("club_id", clubId);
             startActivity(intent);
         });
 
-        // 뒤로가기 버튼 연결
-        btnBack.setOnClickListener(v -> {
-            finish(); // 현재 액티비티 종료 -> 이전 화면으로 복귀
+        // [추가] 모임 시작하기 (일정 설정 화면으로 이동)
+        btnStart.setOnClickListener(v -> {
+            Intent intent = new Intent(ClubActivity.this, ScheduleSetupActivity.class);
+            intent.putExtra("club_id", clubId);
+            startActivity(intent);
         });
 
-        // [추가] 참여하기 버튼 클릭 시
+        // 참여하기
         btnJoin.setOnClickListener(v -> {
             // DB에 멤버로 추가
             DataManager.getInstance(this).joinClub(currentUserId, clubId);
             Toast.makeText(this, "참여 완료! 홈 화면에 추가되었습니다.", Toast.LENGTH_SHORT).show();
-            // 화면 새로고침
+            // 화면 새로고침 (버튼 상태 변경 위해)
             loadClubData();
         });
     }
@@ -96,27 +108,37 @@ public class ClubActivity extends AppCompatActivity {
             tvDesc.setText(currentClub.getDescription());
 
             // ----------------------------------------------------
-            // [핵심 로직] 방장이냐 아니냐에 따라 버튼 교체
+            // [핵심 로직] 방장 여부 및 상태에 따른 버튼 표시
             // ----------------------------------------------------
             if (currentClub.isOwner()) {
-                // 1. 방장인 경우 -> 수정/삭제 보이기, 참여 버튼 숨기기
-                layoutOwnerActions.setVisibility(View.VISIBLE);
-                btnJoin.setVisibility(View.GONE);
+                // 1. 방장인 경우
+                layoutOwnerActions.setVisibility(View.VISIBLE); // 수정/삭제 보임
+                btnJoin.setVisibility(View.GONE); // 참여 버튼 숨김
+
+                // [추가] 상태가 '모집중'일 때만 시작 버튼을 보여줌
+                if ("모집중".equals(currentClub.getStatus())) {
+                    btnStart.setVisibility(View.VISIBLE);
+                } else {
+                    // 이미 '진행중'이면 시작 버튼 숨김
+                    btnStart.setVisibility(View.GONE);
+                }
+
             } else {
-                // 2. 방장이 아닌 경우 -> 수정/삭제 숨기기
+                // 2. 방장이 아닌 경우
                 layoutOwnerActions.setVisibility(View.GONE);
+                btnStart.setVisibility(View.GONE); // 시작 버튼 절대 숨김
 
                 // 이미 참여했는지 확인
                 boolean isMember = DataManager.getInstance(this).checkIsMember(currentUserId, clubId);
 
                 if (isMember) {
-                    // 이미 멤버라면 버튼 숨기기 (또는 '참여중' 텍스트 표시)
+                    // 이미 멤버라면 버튼 비활성화
                     btnJoin.setText("이미 참여 중인 모임입니다");
                     btnJoin.setEnabled(false);
                     btnJoin.setVisibility(View.VISIBLE);
                     btnJoin.setBackgroundColor(getColor(R.color.text_secondary)); // 회색 처리
                 } else {
-                    // 참여 안 했으면 버튼 보이기
+                    // 참여 안 했으면 참여 버튼 활성화
                     btnJoin.setText("이 모임 참여하기");
                     btnJoin.setEnabled(true);
                     btnJoin.setVisibility(View.VISIBLE);
