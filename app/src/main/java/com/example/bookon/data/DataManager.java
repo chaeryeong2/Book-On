@@ -57,7 +57,6 @@ public class DataManager {
 
     // ===============================================================
     // [U] SCHEDULE: 일정 및 순서 확정 (ScheduleSetupActivity용)
-    // [추가됨]
     // ===============================================================
     public void setClubSchedule(int clubId, String startDate, int cycleWeeks, ArrayList<String> memberIds) {
         // 1. 클럽 테이블 업데이트 (시작일, 주기, 상태 변경)
@@ -71,7 +70,6 @@ public class DataManager {
         database.update("clubs", clubValues, whereClause, whereArgs);
 
         // 2. 멤버 테이블 업데이트 (순서 저장)
-        // memberIds 리스트에 들어있는 순서대로 1, 2, 3... 부여
         for (int i = 0; i < memberIds.size(); i++) {
             ContentValues memberValues = new ContentValues();
             memberValues.put("sequence", i + 1); // 1번부터 시작
@@ -87,8 +85,12 @@ public class DataManager {
     // ===============================================================
 
     // 1. 모집 중인 모임 조회 (RecruitActivity용)
+    // [수정됨] '모집중' 또는 '진행중'인 모임을 모두 가져옴
     public ArrayList<Club> getRecruitingClubs(String currentUserId) {
-        return getClubsByQuery("status = ?", new String[]{"모집중"}, "_id DESC", currentUserId);
+        String selection = "status = ? OR status = ?";
+        String[] selectionArgs = new String[]{"모집중", "진행중"};
+
+        return getClubsByQuery(selection, selectionArgs, "_id DESC", currentUserId);
     }
 
     // 2. 내 모임 리스트 조회 (HomeActivity용)
@@ -109,7 +111,7 @@ public class DataManager {
         return clubList;
     }
 
-    // 3. ID로 특정 모임 하나만 조회 (상세 페이지용)
+    // 3. ID로 특정 모임 하나만 조회
     public Club getClubById(int clubId, String currentUserId) {
         String selection = "_id = ?";
         String[] selectionArgs = new String[]{String.valueOf(clubId)};
@@ -122,7 +124,7 @@ public class DataManager {
         return null;
     }
 
-    // 4. 이미 참여한 멤버인지 확인 (중복 참여 방지)
+    // 4. 이미 참여한 멤버인지 확인
     public boolean checkIsMember(String userId, int clubId) {
         String query = "SELECT _id FROM members WHERE user_id = ? AND club_id = ?";
         Cursor cursor = database.rawQuery(query, new String[]{userId, String.valueOf(clubId)});
@@ -134,10 +136,9 @@ public class DataManager {
         return isMember;
     }
 
-    // 5. 멤버 리스트 가져오기 (순서가 있으면 순서대로, 없으면 가입순) [추가됨]
+    // 5. 멤버 리스트 가져오기 (순서가 있으면 순서대로, 없으면 가입순)
     public ArrayList<String> getClubMemberIds(int clubId) {
         ArrayList<String> members = new ArrayList<>();
-        // sequence가 0이 아니면 sequence순, 아니면 _id순
         String query = "SELECT user_id FROM members WHERE club_id = ? ORDER BY CASE WHEN sequence > 0 THEN sequence ELSE 999 END, _id ASC";
         Cursor cursor = database.rawQuery(query, new String[]{String.valueOf(clubId)});
 
@@ -146,6 +147,18 @@ public class DataManager {
         }
         cursor.close();
         return members;
+    }
+
+    // 6. 현재 멤버 수 확인 (정원 체크용)
+    public int getMemberCount(int clubId) {
+        String query = "SELECT COUNT(*) FROM members WHERE club_id = ?";
+        Cursor cursor = database.rawQuery(query, new String[]{String.valueOf(clubId)});
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
     }
 
     // ===============================================================
@@ -180,7 +193,7 @@ public class DataManager {
     }
 
     // ===============================================================
-    // Private Helpers (중복 코드 제거)
+    // Private Helpers
     // ===============================================================
 
     private ArrayList<Club> getClubsByQuery(String selection, String[] selectionArgs, String sortOrder, String currentUserId) {
@@ -206,8 +219,6 @@ public class DataManager {
         int statusIndex = cursor.getColumnIndex("status");
         int bookIndex = cursor.getColumnIndex("current_book");
         int ownerIdIndex = cursor.getColumnIndex("owner_id");
-
-        // [추가됨] 일정 관련 컬럼 읽기
         int scheduleStartIndex = cursor.getColumnIndex("schedule_start");
         int cycleWeeksIndex = cursor.getColumnIndex("cycle_weeks");
 
@@ -219,8 +230,6 @@ public class DataManager {
         String description = cursor.getString(descIndex);
         String status = (statusIndex != -1) ? cursor.getString(statusIndex) : "모집중";
         String currentBook = (bookIndex != -1) ? cursor.getString(bookIndex) : "";
-
-        // [추가됨] 일정 데이터 추출 (없으면 null 또는 0)
         String scheduleStart = (scheduleStartIndex != -1) ? cursor.getString(scheduleStartIndex) : null;
         int cycleWeeks = (cycleWeeksIndex != -1) ? cursor.getInt(cycleWeeksIndex) : 0;
 
@@ -232,8 +241,6 @@ public class DataManager {
         club.setStatus(status);
         club.setCurrentBook(currentBook);
         club.setOwner(isOwner);
-
-        // [추가됨] 일정 데이터 세팅 (Club.java에 Setter 필요)
         club.setScheduleStart(scheduleStart);
         club.setCycleWeeks(cycleWeeks);
 

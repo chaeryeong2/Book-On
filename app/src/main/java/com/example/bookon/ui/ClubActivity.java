@@ -11,13 +11,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.bookon.R;
 import com.example.bookon.data.Club;
 import com.example.bookon.data.DataManager;
 
-public class ClubActivity extends AppCompatActivity {
+public class ClubActivity extends BaseActivity { // BaseActivity 상속 유지
 
     private int clubId;
     private Club currentClub;
@@ -25,7 +24,7 @@ public class ClubActivity extends AppCompatActivity {
 
     // UI 요소
     private LinearLayout layoutOwnerActions;
-    private Button btnEdit, btnDelete, btnJoin, btnStart; // [추가] btnStart
+    private Button btnEdit, btnDelete, btnJoin, btnStart;
     private ImageButton btnBack;
     private TextView tvName, tvStatus, tvBook, tvCapacity, tvDate, tvDesc;
 
@@ -54,38 +53,50 @@ public class ClubActivity extends AppCompatActivity {
         btnDelete = findViewById(R.id.btn_delete_club);
         btnJoin = findViewById(R.id.btn_join_club);
         btnBack = findViewById(R.id.btn_back);
-        btnStart = findViewById(R.id.btn_start_club); // [추가] 시작 버튼 연결
+        btnStart = findViewById(R.id.btn_start_club);
 
         // ---------------------------------------------------------------
         // 버튼 리스너 설정
         // ---------------------------------------------------------------
 
-        // 뒤로가기
         btnBack.setOnClickListener(v -> finish());
 
-        // 삭제하기
         btnDelete.setOnClickListener(v -> deleteClub());
 
-        // 수정하기
         btnEdit.setOnClickListener(v -> {
             Intent intent = new Intent(ClubActivity.this, EditClubActivity.class);
             intent.putExtra("club_id", clubId);
             startActivity(intent);
         });
 
-        // [추가] 모임 시작하기 (일정 설정 화면으로 이동)
         btnStart.setOnClickListener(v -> {
             Intent intent = new Intent(ClubActivity.this, ScheduleSetupActivity.class);
             intent.putExtra("club_id", clubId);
             startActivity(intent);
         });
 
-        // 참여하기
+        // [참여하기] 버튼 클릭 시 (더블 체크)
         btnJoin.setOnClickListener(v -> {
-            // DB에 멤버로 추가
+            if (currentClub == null) return;
+
+            // 1. 상태 체크 (이미 시작된 모임인지)
+            if ("진행중".equals(currentClub.getStatus())) {
+                Toast.makeText(this, "이미 시작된 모임입니다.", Toast.LENGTH_SHORT).show();
+                loadClubData();
+                return;
+            }
+
+            // 2. 정원 체크
+            int currentCount = DataManager.getInstance(this).getMemberCount(clubId);
+            if (currentCount >= currentClub.getCapacity()) {
+                Toast.makeText(this, "정원이 초과되어 가입할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                loadClubData(); // 화면 새로고침하여 버튼 상태 업데이트
+                return;
+            }
+
+            // 3. 가입 진행
             DataManager.getInstance(this).joinClub(currentUserId, clubId);
             Toast.makeText(this, "참여 완료! 홈 화면에 추가되었습니다.", Toast.LENGTH_SHORT).show();
-            // 화면 새로고침 (버튼 상태 변경 위해)
             loadClubData();
         });
     }
@@ -100,49 +111,70 @@ public class ClubActivity extends AppCompatActivity {
         currentClub = DataManager.getInstance(this).getClubById(clubId, currentUserId);
 
         if (currentClub != null) {
+            // 현재 멤버 수 조회
+            int currentCount = DataManager.getInstance(this).getMemberCount(clubId);
+
             tvName.setText(currentClub.getName());
             tvStatus.setText(currentClub.getStatus());
             tvBook.setText(currentClub.getCurrentBook());
-            tvCapacity.setText(currentClub.getCapacity() + "명");
+            // 인원 표시 (현재 / 최대)
+            tvCapacity.setText(currentCount + " / " + currentClub.getCapacity() + "명");
             tvDate.setText(currentClub.getStartDate() + " ~ " + currentClub.getEndDate());
             tvDesc.setText(currentClub.getDescription());
 
             // ----------------------------------------------------
-            // [핵심 로직] 방장 여부 및 상태에 따른 버튼 표시
+            // [핵심 로직] 방장 여부 및 상태/정원에 따른 버튼 표시
             // ----------------------------------------------------
             if (currentClub.isOwner()) {
                 // 1. 방장인 경우
                 layoutOwnerActions.setVisibility(View.VISIBLE); // 수정/삭제 보임
                 btnJoin.setVisibility(View.GONE); // 참여 버튼 숨김
 
-                // [추가] 상태가 '모집중'일 때만 시작 버튼을 보여줌
+                // '모집중'일 때만 시작 버튼 보임
                 if ("모집중".equals(currentClub.getStatus())) {
                     btnStart.setVisibility(View.VISIBLE);
                 } else {
-                    // 이미 '진행중'이면 시작 버튼 숨김
                     btnStart.setVisibility(View.GONE);
                 }
 
             } else {
                 // 2. 방장이 아닌 경우
                 layoutOwnerActions.setVisibility(View.GONE);
-                btnStart.setVisibility(View.GONE); // 시작 버튼 절대 숨김
+                btnStart.setVisibility(View.GONE);
 
                 // 이미 참여했는지 확인
                 boolean isMember = DataManager.getInstance(this).checkIsMember(currentUserId, clubId);
 
                 if (isMember) {
-                    // 이미 멤버라면 버튼 비활성화
+                    // [CASE A] 이미 가입함
                     btnJoin.setText("이미 참여 중인 모임입니다");
                     btnJoin.setEnabled(false);
                     btnJoin.setVisibility(View.VISIBLE);
-                    btnJoin.setBackgroundColor(getColor(R.color.text_secondary)); // 회색 처리
+                    btnJoin.setBackgroundColor(getColor(R.color.text_secondary)); // 회색
                 } else {
-                    // 참여 안 했으면 참여 버튼 활성화
-                    btnJoin.setText("이 모임 참여하기");
-                    btnJoin.setEnabled(true);
-                    btnJoin.setVisibility(View.VISIBLE);
-                    btnJoin.setBackgroundTintList(getColorStateList(R.color.brand_secondary));
+                    // 미가입 상태 -> 조건 체크
+
+                    if ("진행중".equals(currentClub.getStatus())) {
+                        // [CASE B] 이미 시작됨
+                        btnJoin.setText("이미 시작된 모임입니다");
+                        btnJoin.setEnabled(false);
+                        btnJoin.setVisibility(View.VISIBLE);
+                        btnJoin.setBackgroundColor(getColor(R.color.text_secondary));
+                    }
+                    else if (currentCount >= currentClub.getCapacity()) {
+                        // [CASE C] 정원 초과
+                        btnJoin.setText("모집 인원이 마감되었습니다");
+                        btnJoin.setEnabled(false);
+                        btnJoin.setVisibility(View.VISIBLE);
+                        btnJoin.setBackgroundColor(getColor(R.color.text_secondary));
+                    }
+                    else {
+                        // [CASE D] 가입 가능
+                        btnJoin.setText("이 모임 참여하기");
+                        btnJoin.setEnabled(true);
+                        btnJoin.setVisibility(View.VISIBLE);
+                        btnJoin.setBackgroundTintList(getColorStateList(R.color.brand_secondary)); // 민트색
+                    }
                 }
             }
         }

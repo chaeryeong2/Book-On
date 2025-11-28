@@ -3,8 +3,10 @@ package com.example.bookon.ui;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View; // [추가] Visibility 상수 사용
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout; // [추가]
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,8 +23,9 @@ public class ClubDetailActivity extends BaseActivity {
     private String currentUserId;
 
     // UI 요소
+    private LinearLayout layoutOwnerActions; // [추가] 버튼 그룹
     private Button btnEdit, btnDelete, btnBook;
-    private ImageButton btnBack; // [추가]
+    private ImageButton btnBack;
     private TextView tvName, tvStatus, tvBook, tvCapacity, tvDate, tvDesc;
 
     @Override
@@ -33,7 +36,6 @@ public class ClubDetailActivity extends BaseActivity {
         clubId = getIntent().getIntExtra("club_id", -1);
         if (clubId == -1) { finish(); return; }
 
-        // 현재 유저 ID 가져오기
         SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
         currentUserId = prefs.getString("CurrentUserId", "");
 
@@ -45,10 +47,13 @@ public class ClubDetailActivity extends BaseActivity {
         tvDate = findViewById(R.id.tv_detail_date);
         tvDesc = findViewById(R.id.tv_detail_desc);
 
+        // [수정] 방장 버튼 그룹(LinearLayout) 연결
+        layoutOwnerActions = findViewById(R.id.layout_owner_actions);
+
         btnEdit = findViewById(R.id.btn_edit_club);
         btnDelete = findViewById(R.id.btn_delete_club);
-        btnBook = findViewById(R.id.btn_book_list); // [추가]
-        btnBack = findViewById(R.id.btn_back); // [추가]
+        btnBook = findViewById(R.id.btn_book_list);
+        btnBack = findViewById(R.id.btn_back);
 
         // 버튼 리스너
         btnDelete.setOnClickListener(v -> deleteClub());
@@ -58,20 +63,14 @@ public class ClubDetailActivity extends BaseActivity {
             startActivity(intent);
         });
 
-        // 책 목록 보기
-        btnBook.setOnClickListener(v->{
+        btnBook.setOnClickListener(v -> {
             Intent intent = new Intent(ClubDetailActivity.this, BookListActivity.class);
             intent.putExtra("club_id", clubId);
             intent.putExtra("club_name", currentClub.getName());
             startActivity(intent);
         });
 
-        // 뒤로가기 버튼 연결
-        btnBack.setOnClickListener(v -> {
-            finish(); // 현재 액티비티 종료 -> 이전 화면으로 복귀
-        });
-
-
+        btnBack.setOnClickListener(v -> finish());
     }
 
     @Override
@@ -90,6 +89,18 @@ public class ClubDetailActivity extends BaseActivity {
             tvCapacity.setText(currentClub.getCapacity() + "명");
             tvDate.setText(currentClub.getStartDate() + " ~ " + currentClub.getEndDate());
             tvDesc.setText(currentClub.getDescription());
+
+            // ----------------------------------------------------
+            // [핵심 추가] 방장 여부에 따른 버튼 표시/숨김 로직
+            // ----------------------------------------------------
+            if (currentClub.isOwner()) {
+                // 방장 -> 수정/삭제 버튼 보임
+                layoutOwnerActions.setVisibility(View.VISIBLE);
+            } else {
+                // 일반 멤버 -> 수정/삭제 버튼 숨김
+                layoutOwnerActions.setVisibility(View.GONE);
+            }
+            // 책 목록 버튼은 누구나 볼 수 있음 (유지)
         }
     }
 

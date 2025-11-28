@@ -1,6 +1,7 @@
 package com.example.bookon.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences; // [필수]
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.bookon.R;
+import com.example.bookon.data.BookDBHelper;
 import com.example.bookon.data.LoginHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -44,29 +46,25 @@ public class ProfileEditActivity extends BaseActivity {
 
         btnSave.setOnClickListener(v -> saveMyInfo());
 
-        // ---------------------------------------------------------
-        // [핵심 수정] 로그아웃 버튼 리스너
-        // ---------------------------------------------------------
+        // 로그아웃
         btnLogout.setOnClickListener(v -> {
-            // 1. [기존 로직] 숫자 userId 저장된 파일 정리 ("user")
             getSharedPreferences("user", MODE_PRIVATE)
                     .edit()
                     .clear()
                     .apply();
 
-            // 2. [핵심 추가] 자동 로그인용 CurrentUserId(String) 정리 ("AppSettings")
+            // 자동 로그인 키 삭제
             getSharedPreferences("AppSettings", MODE_PRIVATE)
                     .edit()
-                    .remove("CurrentUserId") // 이 키를 지워야 SplashActivity가 로그아웃 상태로 인식
+                    .remove("CurrentUserId")
                     .apply();
 
             Intent intent = new Intent(this, LoginActivity.class);
-            // 모든 이전 스택을 지우고 새 작업을 시작
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
 
-        // 기존 다크 모드 로직 유지
+        // 다크 모드 설정
         boolean isDark = getSharedPreferences("settings", MODE_PRIVATE)
                 .getBoolean("dark_mode", false);
         switchDark.setChecked(isDark);
@@ -77,18 +75,14 @@ public class ProfileEditActivity extends BaseActivity {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             }
 
-            // 설정 저장
             getSharedPreferences("settings", MODE_PRIVATE)
                     .edit()
                     .putBoolean("dark_mode", checked)
                     .apply();
         });
 
-        // ---------------------------------------------------------
-        // 하단 네비게이션 바 설정 (기존 로직 유지)
-        // ---------------------------------------------------------
+        // 하단 네비게이션
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
-
         bottomNav.setSelectedItemId(R.id.nav_profile);
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -125,18 +119,34 @@ public class ProfileEditActivity extends BaseActivity {
         cursor.close();
     }
 
+    // [수정됨] 닉네임 변경 시 로직 수정
     private void saveMyInfo() {
-        String nick = etNick.getText().toString().trim();
-        String intro = etIntro.getText().toString().trim();
+        String newNick = etNick.getText().toString().trim();
+        String newIntro = etIntro.getText().toString().trim();
 
-        if (nick.isEmpty()) {
+        if (newNick.isEmpty()) {
             Toast.makeText(this, "닉네임은 필수입니다.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         SQLiteDatabase db = userHelper.getWritableDatabase();
+
+        // 1. 프로필(users) 테이블 업데이트
         String sql = "UPDATE users SET nickname=?, intro=? WHERE id=?";
-        db.execSQL(sql, new Object[]{nick, intro, userId});
+        db.execSQL(sql, new Object[]{newNick, newIntro, userId});
+
+        // 2. 책(book) 테이블 업데이트
+        // (내 아이디를 가진 책을 찾아서 닉네임을 새 것으로 변경)
+
+        // 현재 로그인 아이디 가져오기
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        String currentLoginId = prefs.getString("CurrentUserId", "");
+
+        if (!currentLoginId.isEmpty()) {
+            BookDBHelper bookHelper = new BookDBHelper(this);
+            // "내 아이디(currentLoginId)"인 책들의 주인 이름을 "newNick"으로 바꿔라
+            bookHelper.updateOwnerName(currentLoginId, newNick);
+        }
 
         Toast.makeText(this, "저장 완료", Toast.LENGTH_SHORT).show();
     }

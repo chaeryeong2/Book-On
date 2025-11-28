@@ -7,8 +7,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.bookon.R;
 import com.example.bookon.data.DataManager;
 
@@ -17,7 +15,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Locale;
 
-public class ScheduleSetupActivity extends AppCompatActivity {
+public class ScheduleSetupActivity extends BaseActivity {
 
     private int clubId;
     private String selectedDateStr = "";
