@@ -24,9 +24,6 @@
             android:name=".ui.ClubActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.BaseActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.RecruitActivity"
             android:exported="false" />
         <activity
@@ -51,10 +48,10 @@
             android:name=".ui.SignupActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.SplashActivity"
+            android:name=".ui.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.LoginActivity"
+            android:name=".ui.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

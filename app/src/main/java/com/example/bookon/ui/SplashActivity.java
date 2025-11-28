@@ -17,12 +17,13 @@ import com.example.bookon.R;
 
 public class SplashActivity extends AppCompatActivity {
 
+    private static final long SPLASH_TIME_OUT = 2000; // 2초
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1. [핵심] 앱 실행 시 다크 모드 설정 확인 및 적용
-        // 화면이 그려지기 전에 먼저 테마를 결정해야 깜빡임이 적습니다.
+        // 1. 다크 모드 설정 확인 및 적용 (기존 로직 유지)
         SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
         boolean isDark = prefs.getBoolean("DarkMode", false);
         if (isDark) {
@@ -34,8 +35,7 @@ public class SplashActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_splash);
 
-        // 기존 UI 패딩 설정 코드 유지
-        // (XML의 최상위 레이아웃 ID가 'main'이어야 에러가 안 납니다)
+        // UI 패딩 설정 (기존 코드 유지)
         if (findViewById(R.id.main) != null) {
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -44,11 +44,26 @@ public class SplashActivity extends AppCompatActivity {
             });
         }
 
-        // 테스트 위해 그냥 홈화면으로 이동하게 해놨어요
+        // 2. [핵심 수정] 2초 후 로그인 상태 체크 후 화면 분기
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Intent intent = new Intent(SplashActivity.this, HomeActivity.class);
+            // SharedPreferences에서 CurrentUserId (로그인 상태) 확인
+            String currentUserId = prefs.getString("CurrentUserId", null);
+
+            Intent intent;
+
+            if (currentUserId != null && !currentUserId.isEmpty()) {
+                // ID가 저장되어 있으면 -> 자동 로그인 성공, 홈 화면으로 이동
+                intent = new Intent(SplashActivity.this, HomeActivity.class);
+            } else {
+                // ID가 없으면 -> 로그인 화면으로 이동
+                intent = new Intent(SplashActivity.this, LoginActivity.class);
+            }
+
+            // [추가] 화면 흔들림 방지 및 스택 정리
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
             startActivity(intent);
-            finish(); // 스플래시 화면을 종료하여 뒤로가기 못하게 함
-        }, 2000); // 2000ms = 2초
+            finish(); // 스플래시 화면 종료
+        }, SPLASH_TIME_OUT);
     }
 }
