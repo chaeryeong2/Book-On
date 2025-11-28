@@ -30,9 +30,6 @@
             android:name=".ui.RecruitActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.ReviewActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.ScheduleActivity"
             android:exported="false" />
         <activity

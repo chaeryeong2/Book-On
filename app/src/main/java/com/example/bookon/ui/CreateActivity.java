@@ -1,13 +1,11 @@
 package com.example.bookon.ui;
 
 import android.app.DatePickerDialog;
-import android.content.SharedPreferences; // [추가]
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.bookon.R;
 import com.example.bookon.data.Club;
@@ -16,7 +14,7 @@ import com.example.bookon.data.DataManager;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class CreateActivity extends AppCompatActivity {
+public class CreateActivity extends BaseActivity {
 
     private EditText etClubName, etCapacity, etStartDate, etEndDate, etDescription;
     private Button btnCreateClubSubmit;

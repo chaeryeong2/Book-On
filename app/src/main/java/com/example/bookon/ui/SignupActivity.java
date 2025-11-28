@@ -11,7 +11,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -19,7 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.bookon.R;
 import com.example.bookon.data.LoginHelper;
 
-public class SignupActivity extends AppCompatActivity {
+public class SignupActivity extends BaseActivity {
     EditText etName;
     EditText etEmail;
     EditText etPw;

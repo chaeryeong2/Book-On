@@ -7,8 +7,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.bookon.R;
 import com.example.bookon.data.Club;
 import com.example.bookon.data.DataManager;
@@ -16,7 +14,7 @@ import com.example.bookon.data.DataManager;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class EditClubActivity extends AppCompatActivity {
+public class EditClubActivity extends BaseActivity {
 
     private int clubId;
     private EditText etName, etStatus, etBook, etCapacity, etStartDate, etEndDate, etDesc;

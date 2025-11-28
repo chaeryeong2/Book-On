@@ -12,7 +12,7 @@ import java.util.List;
 public class BookDBHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "bookon.db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2; // [수정] 버전 올림 (1 -> 2)
 
     public BookDBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -20,15 +20,14 @@ public class BookDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
-        // 테이블 한번에 깔끔하게 정의
         db.execSQL(
                 "CREATE TABLE book (" +
                         "   _id INTEGER PRIMARY KEY AUTOINCREMENT," +
                         "   club_id INTEGER NOT NULL," +
                         "   title TEXT NOT NULL," +
                         "   author TEXT," +
-                        "   owner_name TEXT" +
+                        "   owner_name TEXT," +
+                        "   owner_id TEXT" + // [추가] 아이디 저장 컬럼
                         ")"
         );
     }
@@ -39,9 +38,8 @@ public class BookDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-
-    // 책 INSERT
-    public long insertBook(long clubId, String title, String author, String ownerName) {
+    // [수정] 인자에 ownerId 추가
+    public long insertBook(long clubId, String title, String author, String ownerName, String ownerId) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
 
@@ -49,17 +47,18 @@ public class BookDBHelper extends SQLiteOpenHelper {
         values.put("title", title);
         values.put("author", author);
         values.put("owner_name", ownerName);
+        values.put("owner_id", ownerId); // [추가]
 
         return db.insert("book", null, values);
     }
 
-    // 특정 모임의 책 불러오기
     public List<Book> getBooksByClub(long clubId) {
         List<Book> result = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
 
+        // [수정] owner_id도 같이 조회
         Cursor cursor = db.rawQuery(
-                "SELECT _id, club_id, title, author, owner_name FROM book WHERE club_id=? ORDER BY _id DESC",
+                "SELECT _id, club_id, title, author, owner_name, owner_id FROM book WHERE club_id=? ORDER BY _id DESC",
                 new String[]{ String.valueOf(clubId) }
         );
 
@@ -69,22 +68,26 @@ public class BookDBHelper extends SQLiteOpenHelper {
             String title = cursor.getString(2);
             String author = cursor.getString(3);
             String ownerName = cursor.getString(4);
+            String ownerId = cursor.getString(5); // [추가]
 
-            result.add(new Book(id, cId, title, author, ownerName));
+            result.add(new Book(id, cId, title, author, ownerName, ownerId));
         }
         cursor.close();
-
         return result;
     }
-    // 책 삭제
-    // 책 한 권 삭제 (_id 기준)
+
     public int deleteBook(long bookId) {
         SQLiteDatabase db = getWritableDatabase();
-        return db.delete(
-                "book",           // 테이블 이름
-                "_id=?",          // where 절
-                new String[]{ String.valueOf(bookId) }
-        );
+        return db.delete("book", "_id=?", new String[]{ String.valueOf(bookId) });
+    }
+
+    // [수정] 닉네임 변경 시: owner_id가 내 것인 책들의 이름을 바꾼다 (더 안전함)
+    public void updateOwnerName(String userId, String newName) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("owner_name", newName);
+
+        // owner_id가 userId(로그인한 사람)인 행만 업데이트
+        db.update("book", values, "owner_id=?", new String[]{userId});
     }
 }
-

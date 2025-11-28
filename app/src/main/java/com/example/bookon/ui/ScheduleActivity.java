@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bookon.R;
+import com.example.bookon.data.Book;
+import com.example.bookon.data.BookDBHelper;
 import com.example.bookon.data.Club;
 import com.example.bookon.data.DataManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -18,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -29,7 +32,9 @@ public class ScheduleActivity extends BaseActivity {
 
     private int clubId = -1;
     private Club currentClub;
-    // 날짜 계산을 위한 포맷 (년-월-일)
+    private BookDBHelper bookDBHelper;
+    private int totalBookCount = 0;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     @Override
@@ -37,10 +42,8 @@ public class ScheduleActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule);
 
-        // 1. 인텐트로 넘어온 club_id 받기
+        // 1. 인텐트 처리
         clubId = getIntent().getIntExtra("club_id", -1);
-
-        // (예외처리) ID가 없으면, 내가 참여 중인 모임 중 하나를 가져옴
         if (clubId == -1) {
             String myId = getSharedPreferences("AppSettings", MODE_PRIVATE).getString("CurrentUserId", "");
             ArrayList<Club> myClubs = DataManager.getInstance(this).getMyClubList(myId);
@@ -49,29 +52,30 @@ public class ScheduleActivity extends BaseActivity {
             }
         }
 
-        // 2. 뷰 연결
+        // 2. 초기화
+        bookDBHelper = new BookDBHelper(this);
+
+        // 3. 뷰 연결
         calendarView = findViewById(R.id.calendarView);
         tvSelectedDate = findViewById(R.id.tv_selected_date);
         tvDateEvent = findViewById(R.id.tv_date_event);
-        rvExchangeOrder = findViewById(R.id.rv_exchange_order); // 리사이클러뷰
+        rvExchangeOrder = findViewById(R.id.rv_exchange_order);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
-        // 3. 하단 탭 설정
         setupBottomNav(bottomNav);
 
-        // 4. 데이터 로드 및 화면 세팅
+        // 4. 데이터 로드
         if (clubId != -1) {
             loadScheduleData();
         } else {
             tvDateEvent.setText("참여 중인 모임이 없습니다.");
         }
 
-        // 5. 캘린더 클릭 이벤트
+        // 5. 캘린더 클릭
         calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
             String dateText = String.format(Locale.getDefault(), "%d년 %d월 %d일", year, month + 1, dayOfMonth);
             tvSelectedDate.setText(dateText);
 
-            // 클릭한 날짜가 교환일인지 계산
             Calendar c = Calendar.getInstance();
             c.set(year, month, dayOfMonth);
             checkEvent(c.getTimeInMillis());
@@ -79,28 +83,37 @@ public class ScheduleActivity extends BaseActivity {
     }
 
     private void loadScheduleData() {
-        // [1] 상단 교환 순서 (RecyclerView) 연결
-        // DB에서 순서대로 정렬된 멤버 ID 리스트 가져오기
+        // [1] 교환 순서 설정
         ArrayList<String> members = DataManager.getInstance(this).getClubMemberIds(clubId);
-
         ExchangeAdapter adapter = new ExchangeAdapter(members);
-        // 가로 스크롤 설정
         rvExchangeOrder.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvExchangeOrder.setAdapter(adapter);
 
-        // [2] 일정 정보 가져오기 (시작일, 주기)
-        // SharedPreferences에서 현재 유저 ID 가져오기
+        // [2] 일정 정보 가져오기
         String currentUserId = getSharedPreferences("AppSettings", MODE_PRIVATE).getString("CurrentUserId", "");
         currentClub = DataManager.getInstance(this).getClubById(clubId, currentUserId);
 
-        // 오늘 날짜 기준으로 이벤트 체크 한번 실행 (화면 켜지자마자 보이게)
+        // [3] 책 개수 가져오기
+        List<Book> books = bookDBHelper.getBooksByClub(clubId);
+        totalBookCount = books.size();
+
+        // 오늘 날짜 체크
         checkEvent(calendarView.getDate());
     }
 
-    // 날짜를 받아서 교환일인지 계산하는 핵심 로직
+    // -------------------------------------------------------------------
+    // [최종 수정] 날짜 계산 및 표시 로직 (진행 중 표시 복구)
+    // -------------------------------------------------------------------
     private void checkEvent(long clickedTimeMillis) {
+        tvDateEvent.setText("");
+
         if (currentClub == null || currentClub.getScheduleStart() == null) {
             tvDateEvent.setText("일정이 설정되지 않은 모임입니다.");
+            return;
+        }
+
+        if (totalBookCount == 0) {
+            tvDateEvent.setText("등록된 책이 없어 일정을 계산할 수 없습니다.");
             return;
         }
 
@@ -108,32 +121,56 @@ public class ScheduleActivity extends BaseActivity {
             Date startDate = sdf.parse(currentClub.getScheduleStart());
             int cycleWeeks = currentClub.getCycleWeeks();
 
-            // 날짜 차이 계산 (일 단위)
             long diffMillis = clickedTimeMillis - startDate.getTime();
             long diffDays = TimeUnit.DAYS.convert(diffMillis, TimeUnit.MILLISECONDS);
 
-            if (diffDays < 0) {
-                tvDateEvent.setText("독서 시작 전입니다.");
-                tvDateEvent.setTextColor(getColor(R.color.text_secondary));
+            // 1. 시작일인 경우
+            if (diffDays == 0) {
+                tvDateEvent.setText("🚀 독서 모임 시작일입니다!");
+                tvDateEvent.setTextColor(getColor(R.color.brand_primary));
                 return;
             }
 
-            int cycleDays = cycleWeeks * 7; // 주 -> 일 단위 변환
+            // 시작 전이면 빈칸
+            if (diffDays < 0) {
+                return;
+            }
 
-            // 교환일인지 체크 (시작일로부터 주기에 딱 떨어지는 날)
-            if (cycleDays > 0 && diffDays > 0 && diffDays % cycleDays == 0) {
-                long round = diffDays / cycleDays;
-                tvDateEvent.setText("📚 " + round + "차 도서 교환일입니다!");
-                tvDateEvent.setTextColor(getColor(R.color.brand_primary)); // 파란색 강조
+            int cycleDays = cycleWeeks * 7;
+
+            // 2. 교환일인지 체크 (나머지가 0인 날)
+            boolean isExchangeDay = (cycleDays > 0 && diffDays % cycleDays == 0);
+
+            // 현재 몇 라운드 구간인지 계산 (나누기 몫)
+            long round = diffDays / cycleDays;
+
+            if (isExchangeDay) {
+                // [교환일]
+                if (round < totalBookCount) {
+                    tvDateEvent.setText("📚 " + round + "차 도서 교환일입니다!");
+                    tvDateEvent.setTextColor(getColor(R.color.brand_primary));
+                } else if (round == totalBookCount) {
+                    tvDateEvent.setText("🎉 마지막 교환일 (모임 종료)!");
+                    tvDateEvent.setTextColor(getColor(R.color.brand_secondary));
+                } else {
+                    tvDateEvent.setText(""); // 종료 후 날짜는 빈칸
+                }
             } else {
-                long currentRound = (diffDays / cycleDays) + 1;
-                tvDateEvent.setText("현재 " + currentRound + "라운드 독서 진행 중 🔥");
-                tvDateEvent.setTextColor(getColor(R.color.text_secondary));
+                // [교환일 아님 -> 독서 진행 중]
+                // 현재 진행 중인 라운드는 (몫 + 1)
+                long currentRound = round + 1;
+
+                if (currentRound <= totalBookCount) {
+                    // [복구됨] 라운드 진행 표시
+                    tvDateEvent.setText("📖 현재 " + currentRound + "라운드 독서 진행 중");
+                    tvDateEvent.setTextColor(getColor(R.color.text_secondary));
+                } else {
+                    tvDateEvent.setText(""); // 종료 후 날짜는 빈칸
+                }
             }
 
         } catch (ParseException e) {
             e.printStackTrace();
-            tvDateEvent.setText("날짜 계산 오류");
         }
     }
 
