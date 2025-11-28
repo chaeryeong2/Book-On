@@ -3,10 +3,10 @@ package com.example.bookon.ui;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View; // [추가] Visibility 상수 사용
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.LinearLayout; // [추가]
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,15 +23,15 @@ public class ClubDetailActivity extends BaseActivity {
     private String currentUserId;
 
     // UI 요소
-    private LinearLayout layoutOwnerActions; // [추가] 버튼 그룹
+    private LinearLayout layoutOwnerActions;
     private Button btnEdit, btnDelete, btnBook;
     private ImageButton btnBack;
-    private TextView tvName, tvStatus, tvBook, tvCapacity, tvDate, tvDesc;
+    private TextView tvName, tvStatus, tvTopic, tvCapacity, tvDate, tvDesc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_club_detail);
+        setContentView(R.layout.activity_club_detail); // 레이아웃 파일명 주의
 
         clubId = getIntent().getIntExtra("club_id", -1);
         if (clubId == -1) { finish(); return; }
@@ -42,35 +42,37 @@ public class ClubDetailActivity extends BaseActivity {
         // 뷰 연결
         tvName = findViewById(R.id.tv_detail_name);
         tvStatus = findViewById(R.id.tv_detail_status);
-        tvBook = findViewById(R.id.tv_detail_book);
+        tvTopic = findViewById(R.id.tv_topic);
         tvCapacity = findViewById(R.id.tv_detail_capacity);
         tvDate = findViewById(R.id.tv_detail_date);
         tvDesc = findViewById(R.id.tv_detail_desc);
 
-        // [수정] 방장 버튼 그룹(LinearLayout) 연결
         layoutOwnerActions = findViewById(R.id.layout_owner_actions);
-
         btnEdit = findViewById(R.id.btn_edit_club);
         btnDelete = findViewById(R.id.btn_delete_club);
         btnBook = findViewById(R.id.btn_book_list);
         btnBack = findViewById(R.id.btn_back);
 
-        // 버튼 리스너
+        // 리스너 연결
+        btnBack.setOnClickListener(v -> finish());
+
         btnDelete.setOnClickListener(v -> deleteClub());
+
         btnEdit.setOnClickListener(v -> {
             Intent intent = new Intent(ClubDetailActivity.this, EditClubActivity.class);
             intent.putExtra("club_id", clubId);
             startActivity(intent);
         });
 
+        // 책 목록 보기
         btnBook.setOnClickListener(v -> {
-            Intent intent = new Intent(ClubDetailActivity.this, BookListActivity.class);
-            intent.putExtra("club_id", clubId);
-            intent.putExtra("club_name", currentClub.getName());
-            startActivity(intent);
+            if (currentClub != null) {
+                Intent intent = new Intent(ClubDetailActivity.this, BookListActivity.class);
+                intent.putExtra("club_id", clubId);
+                intent.putExtra("club_name", currentClub.getName());
+                startActivity(intent);
+            }
         });
-
-        btnBack.setOnClickListener(v -> finish());
     }
 
     @Override
@@ -83,15 +85,38 @@ public class ClubDetailActivity extends BaseActivity {
         currentClub = DataManager.getInstance(this).getClubById(clubId, currentUserId);
 
         if (currentClub != null) {
+            // 현재 인원 계산
+            int currentCount = DataManager.getInstance(this).getMemberCount(clubId);
+
             tvName.setText(currentClub.getName());
-            tvStatus.setText(currentClub.getStatus());
-            tvBook.setText(currentClub.getCurrentBook());
-            tvCapacity.setText(currentClub.getCapacity() + "명");
+            tvTopic.setText(currentClub.getTopic()); // [수정] 주제 표시
+            tvCapacity.setText(currentCount + " / " + currentClub.getCapacity() + "명");
             tvDate.setText(currentClub.getStartDate() + " ~ " + currentClub.getEndDate());
             tvDesc.setText(currentClub.getDescription());
 
             // ----------------------------------------------------
-            // [핵심 추가] 방장 여부에 따른 버튼 표시/숨김 로직
+            // [수정] 상태 뱃지 텍스트 및 색상 동적 변경
+            // ----------------------------------------------------
+            String displayStatus = currentClub.getStatus();
+
+            // 인원이 꽉 찼으면 '마감됨'으로 표시 (진행중이 아닐 때만)
+            if (!"진행중".equals(displayStatus) && currentCount >= currentClub.getCapacity()) {
+                displayStatus = "마감됨";
+            }
+
+            tvStatus.setText(displayStatus);
+
+            // 색상 변경 로직
+            if ("모집중".equals(displayStatus)) {
+                tvStatus.setBackgroundTintList(getColorStateList(R.color.brand_primary));
+            } else if ("진행중".equals(displayStatus)) {
+                tvStatus.setBackgroundTintList(getColorStateList(R.color.brand_secondary));
+            } else { // 마감됨
+                tvStatus.setBackgroundTintList(getColorStateList(R.color.text_secondary));
+            }
+
+            // ----------------------------------------------------
+            // 방장 여부에 따른 버튼 표시
             // ----------------------------------------------------
             if (currentClub.isOwner()) {
                 // 방장 -> 수정/삭제 버튼 보임
@@ -100,7 +125,7 @@ public class ClubDetailActivity extends BaseActivity {
                 // 일반 멤버 -> 수정/삭제 버튼 숨김
                 layoutOwnerActions.setVisibility(View.GONE);
             }
-            // 책 목록 버튼은 누구나 볼 수 있음 (유지)
+            // 책 목록 버튼(btnBook)은 XML에서 기본적으로 visible 상태입니다.
         }
     }
 

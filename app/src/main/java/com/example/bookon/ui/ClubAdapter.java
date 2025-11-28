@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.bookon.R;
-import com.example.bookon.data.Club; // 패키지명 확인
+import com.example.bookon.data.Club;
 
 import java.util.ArrayList;
 
@@ -39,27 +39,34 @@ public class ClubAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.item_club_card, parent, false);
         }
 
+        // 뷰 연결
         TextView tvClubName = convertView.findViewById(R.id.tv_club_name);
         TextView tvCurrentBook = convertView.findViewById(R.id.tv_current_book);
         TextView tvMemberCount = convertView.findViewById(R.id.tv_member_count);
         TextView tvClubStatus = convertView.findViewById(R.id.tv_club_status);
-
-        // [추가] 방장 배지 뷰 연결
         TextView tvOwnerBadge = convertView.findViewById(R.id.tv_owner_badge);
 
         ImageView ivBookIcon = convertView.findViewById(R.id.iv_book_icon);
         ImageView ivMemberIcon = convertView.findViewById(R.id.iv_member_icon);
 
+        // 데이터 가져오기
         Club club = clubList.get(position);
 
         tvClubName.setText(club.getName());
-        tvCurrentBook.setText("현재 책: " + club.getCurrentBook());
+        tvCurrentBook.setText("주제: " + club.getTopic());
         tvMemberCount.setText("정원 " + club.getCapacity() + "명");
+
         String statusStr = club.getStatus();
-        tvClubStatus.setText(statusStr);
+
+        // [수정] 텍스트 표시 로직: DB 값이 "마감됨"이면 "마감됨"으로 표시
+        if ("마감됨".equals(statusStr)) {
+            tvClubStatus.setText("마감됨");
+        } else {
+            tvClubStatus.setText(statusStr); // 모집중, 진행중
+        }
 
         // ---------------------------------------------------
-        // [추가] 내가 만든 모임이면 배지 보이기
+        // 방장 여부에 따른 배지 표시
         // ---------------------------------------------------
         if (club.isOwner()) {
             tvOwnerBadge.setVisibility(View.VISIBLE);
@@ -67,13 +74,19 @@ public class ClubAdapter extends BaseAdapter {
             tvOwnerBadge.setVisibility(View.GONE);
         }
 
-        // 상태 칩 색상 변경
-        if (statusStr.equals("모집중")) {
+        // [수정] 상태에 따른 칩 색상 변경
+        if ("모집중".equals(statusStr)) {
+            // 파란색 (Primary)
             tvClubStatus.setBackgroundTintList(context.getColorStateList(R.color.brand_primary));
-        } else {
+        } else if ("진행중".equals(statusStr)) {
+            // 민트색 (Secondary)
             tvClubStatus.setBackgroundTintList(context.getColorStateList(R.color.brand_secondary));
+        } else {
+            // 마감됨 -> 회색
+            tvClubStatus.setBackgroundTintList(context.getColorStateList(R.color.text_secondary));
         }
 
+        // 아이콘 색상 설정
         ivBookIcon.setColorFilter(context.getColor(R.color.brand_primary));
         ivMemberIcon.setColorFilter(context.getColor(R.color.text_secondary));
 

@@ -8,16 +8,16 @@ public class Club {
     private String endDate;
     private String description;
 
-    // 실제 데이터를 저장할 변수
+    // [변경] currentBook 삭제 -> topic 추가
     private String status;
-    private String currentBook;
+    private String topic; // 모임 주제 (예: 추리소설, 자기계발)
 
-    // 방장 여부 (true면 내가 만든 모임)
+    // 방장 여부
     private boolean isOwner;
 
-    // [추가됨] 일정 관리 변수
-    private String scheduleStart; // 독서 시작일
-    private int cycleWeeks;       // 교환 주기 (주 단위)
+    // 일정 관리 변수
+    private String scheduleStart;
+    private int cycleWeeks;
 
     public Club(String name, int capacity, String startDate, String endDate, String description) {
         this.name = name;
@@ -28,10 +28,9 @@ public class Club {
 
         // 생성 시 기본값 설정
         this.status = "모집중";
-        this.currentBook = "선정 도서 없음";
+        this.topic = "자유 주제"; // [변경] 기본 주제 설정
         this.isOwner = false;
 
-        // 일정 정보는 나중에 '모임 시작' 시 설정되므로 초기엔 null/0
         this.scheduleStart = null;
         this.cycleWeeks = 0;
     }
@@ -61,15 +60,13 @@ public class Club {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public String getCurrentBook() { return currentBook; }
-    public void setCurrentBook(String currentBook) { this.currentBook = currentBook; }
+    // [변경] Topic Getter & Setter
+    public String getTopic() { return topic; }
+    public void setTopic(String topic) { this.topic = topic; }
 
     public boolean isOwner() { return isOwner; }
     public void setOwner(boolean owner) { isOwner = owner; }
 
-    // --------------------------------------------------------
-    // [추가됨] 일정 관련 Getter & Setter
-    // --------------------------------------------------------
     public String getScheduleStart() { return scheduleStart; }
     public void setScheduleStart(String scheduleStart) { this.scheduleStart = scheduleStart; }
 

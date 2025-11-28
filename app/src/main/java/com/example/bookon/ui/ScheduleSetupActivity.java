@@ -1,6 +1,8 @@
 package com.example.bookon.ui;
 
 import android.app.DatePickerDialog;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -9,6 +11,7 @@ import android.widget.Toast;
 
 import com.example.bookon.R;
 import com.example.bookon.data.DataManager;
+import com.example.bookon.data.LoginHelper; // [추가]
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -19,16 +22,19 @@ public class ScheduleSetupActivity extends BaseActivity {
 
     private int clubId;
     private String selectedDateStr = "";
-    private ArrayList<String> memberList; // 멤버 ID 리스트
+    private ArrayList<String> memberList; // 멤버 ID 리스트 (로직용)
+    private LoginHelper loginHelper;      // [추가] 닉네임 조회용 DB 헬퍼
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_setup);
 
+        loginHelper = new LoginHelper(this); // [추가] 초기화
+
         clubId = getIntent().getIntExtra("club_id", -1);
 
-        // 멤버 불러오기
+        // 멤버 불러오기 (여기엔 ID들이 들어있음)
         memberList = DataManager.getInstance(this).getClubMemberIds(clubId);
 
         Button btnDate = findViewById(R.id.btn_pick_date);
@@ -50,8 +56,8 @@ public class ScheduleSetupActivity extends BaseActivity {
 
         // 2. 랜덤 섞기
         btnRandom.setOnClickListener(v -> {
-            Collections.shuffle(memberList); // 리스트 섞기
-            updatePreview(tvPreview);
+            Collections.shuffle(memberList); // 리스트 섞기 (ID 순서가 섞임)
+            updatePreview(tvPreview);        // 화면 갱신
             Toast.makeText(this, "순서가 변경되었습니다.", Toast.LENGTH_SHORT).show();
         });
 
@@ -63,21 +69,40 @@ public class ScheduleSetupActivity extends BaseActivity {
             }
             int weeks = Integer.parseInt(etWeeks.getText().toString());
 
-            // DB에 저장
+            // DB에 저장 (ID 리스트를 저장해야 하므로 memberList 그대로 사용)
             DataManager.getInstance(this).setClubSchedule(clubId, selectedDateStr, weeks, memberList);
 
             Toast.makeText(this, "모임이 시작되었습니다!", Toast.LENGTH_SHORT).show();
-            // ScheduleActivity로 바로 이동하거나 홈으로 이동
             finish();
         });
     }
 
+    // [수정] ID 리스트를 돌면서 닉네임으로 변환하여 표시
     private void updatePreview(TextView tv) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < memberList.size(); i++) {
-            sb.append(i + 1).append(". ").append(memberList.get(i)); // 닉네임 대신 ID 표시 (나중에 닉네임으로 변경 가능)
+            String memberId = memberList.get(i);
+            String nickname = getNickname(memberId); // ID -> 닉네임 변환
+
+            sb.append(i + 1).append(". ").append(nickname);
+
             if (i < memberList.size() - 1) sb.append(" → ");
         }
         tv.setText(sb.toString());
+    }
+
+    // [추가] ID(이메일)로 닉네임을 조회하는 헬퍼 메서드
+    private String getNickname(String userId) {
+        SQLiteDatabase db = loginHelper.getReadableDatabase();
+        String nickname = userId; // 기본값은 아이디(못 찾을 경우 대비)
+
+        // users 테이블에서 username(아이디)이 일치하는 행의 nickname을 가져옴
+        Cursor cursor = db.rawQuery("SELECT nickname FROM users WHERE username = ?", new String[]{userId});
+
+        if (cursor.moveToFirst()) {
+            nickname = cursor.getString(0);
+        }
+        cursor.close();
+        return nickname;
     }
 }

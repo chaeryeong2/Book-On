@@ -43,45 +43,29 @@
             android:inputType="textPersonName"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="@color/text_primary" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="모임 상태 (모집중/진행중/마감)"
+            android:text="모임 주제 (책 장르)"
             android:textColor="@color/text_secondary"
             android:textStyle="bold" />
 
         <EditText
-            android:id="@+id/et_edit_status"
+            android:id="@+id/et_edit_topic"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginBottom="24dp"
             android:background="@drawable/bg_input_box"
-            android:hint="예) 모집중"
+            android:hint="예) 소설, 자기계발"
+            android:inputType="text"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="@color/text_primary" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="현재 선정 도서"
-            android:textColor="@color/text_secondary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/et_edit_book"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/bg_input_box"
-            android:hint="읽고 있는 책 제목"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textColor="@color/text_primary" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -100,7 +84,8 @@
             android:inputType="number"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="@color/text_primary" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -121,6 +106,7 @@
                 android:id="@+id/et_edit_start_date"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
+                android:layout_marginBottom="0dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_input_box"
                 android:clickable="true"
@@ -128,9 +114,11 @@
                 android:drawablePadding="8dp"
                 android:focusable="false"
                 android:hint="시작일"
+                android:inputType="none"
                 android:paddingStart="12dp"
                 android:paddingEnd="16dp"
-                android:textColor="@color/text_primary" />
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -144,6 +132,7 @@
                 android:id="@+id/et_edit_end_date"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
+                android:layout_marginBottom="0dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_input_box"
                 android:clickable="true"
@@ -151,9 +140,11 @@
                 android:drawablePadding="8dp"
                 android:focusable="false"
                 android:hint="종료일"
+                android:inputType="none"
                 android:paddingStart="12dp"
                 android:paddingEnd="16dp"
-                android:textColor="@color/text_primary" />
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_hint" />
         </LinearLayout>
 
         <TextView
@@ -173,7 +164,8 @@
             android:gravity="top"
             android:minLines="5"
             android:padding="16dp"
-            android:textColor="@color/text_primary" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
 
         <Button
             android:id="@+id/btn_save_changes"

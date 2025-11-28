@@ -50,6 +50,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
+            android:text="모임 주제 (책 장르)"
+            android:textColor="@color/text_secondary"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/et_club_topic"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/bg_input_box"
+            android:hint="예) 소설, 여름"
+            android:inputType="text"
+            android:paddingHorizontal="16dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="모집 인원 (최대 20명)"
             android:textColor="@color/text_secondary"
             android:textStyle="bold" />
@@ -67,7 +87,6 @@
             android:paddingEnd="16dp"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_hint" />
-
 
         <TextView
             android:layout_width="wrap_content"
@@ -129,51 +148,6 @@
                 android:textColorHint="@color/text_hint" />
         </LinearLayout>
 
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="모집 성별 (선택)"
-            android:textColor="@color/text_secondary"
-            android:textStyle="bold" />
-
-        <RadioGroup
-            android:id="@+id/rg_gender_filter"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/rb_gender_all"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:buttonTint="@color/brand_secondary"
-                android:checked="true"
-                android:text="성별 무관"
-                android:textColor="@color/text_primary" />
-
-            <RadioButton
-                android:id="@+id/rb_gender_male"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:buttonTint="@color/brand_secondary"
-                android:text="남성만"
-                android:textColor="@color/text_primary" />
-
-            <RadioButton
-                android:id="@+id/rb_gender_female"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:buttonTint="@color/brand_secondary"
-                android:text="여성만"
-                android:textColor="@color/text_primary" />
-        </RadioGroup>
-
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -195,7 +169,6 @@
             android:padding="16dp"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_hint" />
-
 
         <Button
             android:id="@+id/btn_create_club_submit"

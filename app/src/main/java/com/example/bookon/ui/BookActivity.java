@@ -1,8 +1,8 @@
 package com.example.bookon.ui;
 
 import android.content.SharedPreferences;
-import android.database.Cursor; // [추가]
-import android.database.sqlite.SQLiteDatabase; // [추가]
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,15 +13,15 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.bookon.R;
-import com.example.bookon.data.BookDBHelper;
-import com.example.bookon.data.LoginHelper; // [추가]
+import com.example.bookon.data.DataManager; // [변경]
+import com.example.bookon.data.LoginHelper;
 
 public class BookActivity extends AppCompatActivity {
     private EditText etTitle, etAuthor;
     private Button btnRegister;
     private ImageButton btnBack;
-    private BookDBHelper dbHelper;
-    private LoginHelper userHelper; // [추가] 유저 DB 접근용
+    // private BookDBHelper dbHelper; // [삭제]
+    private LoginHelper userHelper;
     private long clubId;
 
     @Override
@@ -30,8 +30,8 @@ public class BookActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_book);
 
-        dbHelper = new BookDBHelper(this);
-        userHelper = new LoginHelper(this); // [추가] 초기화
+        // dbHelper = new BookDBHelper(this); // [삭제]
+        userHelper = new LoginHelper(this);
 
         clubId = getIntent().getIntExtra("club_id", -1);
         etTitle = findViewById(R.id.et_book_title);
@@ -52,11 +52,9 @@ public class BookActivity extends AppCompatActivity {
             return;
         }
 
-        // 1. 아이디 가져오기
         SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
         String currentUserId = prefs.getString("CurrentUserId", "");
 
-        // 2. 닉네임 가져오기
         String nickname = "익명";
         if (!currentUserId.isEmpty()) {
             SQLiteDatabase userDb = userHelper.getReadableDatabase();
@@ -67,8 +65,8 @@ public class BookActivity extends AppCompatActivity {
             cursor.close();
         }
 
-        // 3. [수정] 아이디와 닉네임 둘 다 저장
-        long id = dbHelper.insertBook(clubId, title, author, nickname, currentUserId);
+        // [수정] DataManager를 통해 책 등록 (성공 시 rowId, 실패 시 -1 반환)
+        long id = DataManager.getInstance(this).insertBook(clubId, title, author, nickname, currentUserId);
 
         if (id == -1) {
             Toast.makeText(this, "저장 실패", Toast.LENGTH_SHORT).show();

@@ -5,43 +5,45 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class BookOnDBHelper extends SQLiteOpenHelper {
-    // 버전 업 (5 -> 6)
+
+    // [수정] BookDBHelper 통합 및 스키마 변경으로 버전 업 (8 -> 9)
     public BookOnDBHelper(Context context) {
-        super(context, "BookOn.db", null, 6);
+        super(context, "BookOn.db", null, 9);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // 1. 모임 테이블 (일정 관련 컬럼 추가)
+        // 1. 모임 테이블
         db.execSQL("CREATE TABLE clubs(" +
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "name TEXT," +
                 "capacity INTEGER," +
-                "start_date TEXT," + // 이건 모임 생성일 (기존)
+                "start_date TEXT," +
                 "end_date TEXT," +
                 "description TEXT," +
                 "status TEXT," +
-                "current_book TEXT," +
+                "topic TEXT," +
                 "owner_id TEXT," +
-                "schedule_start TEXT," +  // [추가] 독서 시작일 (YYYY-MM-DD)
-                "cycle_weeks INTEGER)"    // [추가] 교환 주기 (주 단위)
+                "schedule_start TEXT," +
+                "cycle_weeks INTEGER)"
         );
 
-        // 2. 멤버 테이블 (순서 컬럼 추가)
+        // 2. 멤버 테이블
         db.execSQL("CREATE TABLE members(" +
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "user_id TEXT," +
-                "club_id INTEGER," +
-                "sequence INTEGER DEFAULT 0)" // [추가] 교환 순서 (1, 2, 3...)
+                "club_id INTEGER)"
         );
 
-        // 3. 책 테이블 (기존 유지)
+        // 3. 책 테이블 (sequence 추가!)
         db.execSQL("CREATE TABLE book (" +
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "club_id INTEGER NOT NULL," +
                 "title TEXT NOT NULL," +
                 "author TEXT," +
-                "owner_name TEXT)"
+                "owner_name TEXT," +
+                "owner_id TEXT," +
+                "sequence INTEGER DEFAULT 0)" // [추가] 여기에 순서 저장
         );
     }
 
