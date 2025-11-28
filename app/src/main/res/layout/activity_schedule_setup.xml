@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@color/app_background">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="모임 일정 설정"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="독서 시작일"
+        android:textStyle="bold"/>
+
+    <Button
+        android:id="@+id/btn_pick_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="날짜 선택하기"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="독서 기간 (주 단위)"
+        android:textStyle="bold"/>
+
+    <EditText
+        android:id="@+id/et_weeks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="예: 2 (2주마다 교환)"
+        android:inputType="number"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="교환 순서 (멤버)"
+        android:textStyle="bold"/>
+
+    <Button
+        android:id="@+id/btn_random_order"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🎲 랜덤 섞기"
+        android:backgroundTint="@color/brand_secondary"/>
+
+    <TextView
+        android:id="@+id/tv_order_preview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="순서: -"
+        android:layout_marginBottom="40dp"
+        android:padding="16dp"
+        android:background="@drawable/bg_input_box"/>
+
+    <Button
+        android:id="@+id/btn_confirm_schedule"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="모임 확정 및 시작"
+        android:backgroundTint="@color/brand_primary"/>
+
+</LinearLayout>
