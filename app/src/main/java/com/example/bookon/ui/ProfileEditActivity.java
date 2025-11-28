@@ -1,7 +1,7 @@
 package com.example.bookon.ui;
 
 import android.content.Intent;
-import android.content.SharedPreferences; // [필수]
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -14,7 +14,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.bookon.R;
-import com.example.bookon.data.BookDBHelper;
+import com.example.bookon.data.DataManager; // [변경]
 import com.example.bookon.data.LoginHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -46,27 +46,16 @@ public class ProfileEditActivity extends BaseActivity {
 
         btnSave.setOnClickListener(v -> saveMyInfo());
 
-        // 로그아웃
         btnLogout.setOnClickListener(v -> {
-            getSharedPreferences("user", MODE_PRIVATE)
-                    .edit()
-                    .clear()
-                    .apply();
-
-            // 자동 로그인 키 삭제
-            getSharedPreferences("AppSettings", MODE_PRIVATE)
-                    .edit()
-                    .remove("CurrentUserId")
-                    .apply();
+            getSharedPreferences("user", MODE_PRIVATE).edit().clear().apply();
+            getSharedPreferences("AppSettings", MODE_PRIVATE).edit().remove("CurrentUserId").apply();
 
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
 
-        // 다크 모드 설정
-        boolean isDark = getSharedPreferences("settings", MODE_PRIVATE)
-                .getBoolean("dark_mode", false);
+        boolean isDark = getSharedPreferences("settings", MODE_PRIVATE).getBoolean("dark_mode", false);
         switchDark.setChecked(isDark);
         switchDark.setOnCheckedChangeListener((buttonView, checked) -> {
             if (checked) {
@@ -74,32 +63,23 @@ public class ProfileEditActivity extends BaseActivity {
             } else {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             }
-
-            getSharedPreferences("settings", MODE_PRIVATE)
-                    .edit()
-                    .putBoolean("dark_mode", checked)
-                    .apply();
+            getSharedPreferences("settings", MODE_PRIVATE).edit().putBoolean("dark_mode", checked).apply();
         });
 
-        // 하단 네비게이션
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setSelectedItemId(R.id.nav_profile);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-
             if (itemId == R.id.nav_home) {
                 startActivity(new Intent(this, HomeActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
+                overridePendingTransition(0, 0); return true;
             } else if (itemId == R.id.nav_recruit) {
                 startActivity(new Intent(this, RecruitActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
+                overridePendingTransition(0, 0); return true;
             } else if (itemId == R.id.nav_schedule) {
                 startActivity(new Intent(this, ScheduleActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
+                overridePendingTransition(0, 0); return true;
             } else if (itemId == R.id.nav_profile) {
                 return true;
             }
@@ -119,7 +99,6 @@ public class ProfileEditActivity extends BaseActivity {
         cursor.close();
     }
 
-    // [수정됨] 닉네임 변경 시 로직 수정
     private void saveMyInfo() {
         String newNick = etNick.getText().toString().trim();
         String newIntro = etIntro.getText().toString().trim();
@@ -131,21 +110,25 @@ public class ProfileEditActivity extends BaseActivity {
 
         SQLiteDatabase db = userHelper.getWritableDatabase();
 
-        // 1. 프로필(users) 테이블 업데이트
+        String oldNick = "";
+        Cursor cursor = db.rawQuery("SELECT nickname FROM users WHERE id=?", new String[]{String.valueOf(userId)});
+        if (cursor.moveToFirst()) {
+            oldNick = cursor.getString(0);
+        }
+        cursor.close();
+
         String sql = "UPDATE users SET nickname=?, intro=? WHERE id=?";
         db.execSQL(sql, new Object[]{newNick, newIntro, userId});
 
-        // 2. 책(book) 테이블 업데이트
-        // (내 아이디를 가진 책을 찾아서 닉네임을 새 것으로 변경)
+        // 닉네임이 변경되었을 때 책 테이블의 작성자 이름도 업데이트
+        if (!oldNick.isEmpty() && !oldNick.equals(newNick)) {
+            SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+            String currentLoginId = prefs.getString("CurrentUserId", "");
 
-        // 현재 로그인 아이디 가져오기
-        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
-        String currentLoginId = prefs.getString("CurrentUserId", "");
-
-        if (!currentLoginId.isEmpty()) {
-            BookDBHelper bookHelper = new BookDBHelper(this);
-            // "내 아이디(currentLoginId)"인 책들의 주인 이름을 "newNick"으로 바꿔라
-            bookHelper.updateOwnerName(currentLoginId, newNick);
+            if (!currentLoginId.isEmpty()) {
+                // [수정] DataManager를 통해 책 주인 이름 변경
+                DataManager.getInstance(this).updateBookOwnerName(currentLoginId, newNick);
+            }
         }
 
         Toast.makeText(this, "저장 완료", Toast.LENGTH_SHORT).show();

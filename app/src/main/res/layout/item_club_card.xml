@@ -81,7 +81,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="현재 책: 데미안"
+            android:text="모임 주제: 소설"
             android:textColor="@color/text_secondary"
             app:layout_constraintBottom_toBottomOf="@id/iv_book_icon"
             app:layout_constraintEnd_toEndOf="parent"

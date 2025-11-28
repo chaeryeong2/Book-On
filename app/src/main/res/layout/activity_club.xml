@@ -91,12 +91,12 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="현재 선정 도서"
+                    android:text="모임 주제"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/tv_detail_book"
+                    android:id="@+id/tv_topic"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"

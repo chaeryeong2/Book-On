@@ -17,7 +17,8 @@ import java.util.Locale;
 public class EditClubActivity extends BaseActivity {
 
     private int clubId;
-    private EditText etName, etStatus, etBook, etCapacity, etStartDate, etEndDate, etDesc;
+    // [수정] etStatus 삭제, etBook -> etTopic 변경
+    private EditText etName, etTopic, etCapacity, etStartDate, etEndDate, etDesc;
     private Button btnSave;
     private Club currentClub;
     private Calendar calendar = Calendar.getInstance();
@@ -35,10 +36,9 @@ public class EditClubActivity extends BaseActivity {
             return;
         }
 
-        // 2. 뷰 연결
+        // 2. 뷰 연결 (etStatus 제거됨)
         etName = findViewById(R.id.et_edit_name);
-        etStatus = findViewById(R.id.et_edit_status);
-        etBook = findViewById(R.id.et_edit_book);
+        etTopic = findViewById(R.id.et_edit_topic); // [수정] XML ID와 일치시켜야 함
         etCapacity = findViewById(R.id.et_edit_capacity);
         etStartDate = findViewById(R.id.et_edit_start_date);
         etEndDate = findViewById(R.id.et_edit_end_date);
@@ -48,7 +48,7 @@ public class EditClubActivity extends BaseActivity {
         // 3. 기존 데이터 불러와서 화면에 채우기
         loadCurrentData();
 
-        // 4. 날짜 선택 이벤트 연결 (CreateActivity와 동일)
+        // 4. 날짜 선택 이벤트 연결
         etStartDate.setOnClickListener(v -> showDatePickerDialog(etStartDate));
         etEndDate.setOnClickListener(v -> showDatePickerDialog(etEndDate));
 
@@ -57,18 +57,19 @@ public class EditClubActivity extends BaseActivity {
     }
 
     private void loadCurrentData() {
-        // 현재 유저 ID 가져오기 (DB 조회 시 필요)
         SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
         String currentUserId = prefs.getString("CurrentUserId", "");
 
-        // DB에서 해당 ID의 클럽 정보 가져오기
         currentClub = DataManager.getInstance(this).getClubById(clubId, currentUserId);
 
         if (currentClub != null) {
-            // 가져온 데이터를 EditText에 채워넣기 (자동 입력)
             etName.setText(currentClub.getName());
-            etStatus.setText(currentClub.getStatus());
-            etBook.setText(currentClub.getCurrentBook());
+
+            // [수정] 주제(Topic) 불러오기
+            etTopic.setText(currentClub.getTopic());
+
+            // [참고] status는 화면에 표시하지 않고, 객체 내부에만 유지함
+
             etCapacity.setText(String.valueOf(currentClub.getCapacity()));
             etStartDate.setText(currentClub.getStartDate());
             etEndDate.setText(currentClub.getEndDate());
@@ -82,14 +83,14 @@ public class EditClubActivity extends BaseActivity {
     private void updateClub() {
         // 입력된 값 가져오기
         String name = etName.getText().toString().trim();
-        String status = etStatus.getText().toString().trim();
-        String book = etBook.getText().toString().trim();
+        String topic = etTopic.getText().toString().trim(); // [수정] 주제 가져오기
         String desc = etDesc.getText().toString().trim();
         String startDate = etStartDate.getText().toString().trim();
         String endDate = etEndDate.getText().toString().trim();
 
-        if (name.isEmpty() || status.isEmpty()) {
-            Toast.makeText(this, "모임 이름과 상태는 필수입니다.", Toast.LENGTH_SHORT).show();
+        // [수정] 유효성 검사 (Status 제거, Topic 추가)
+        if (name.isEmpty() || topic.isEmpty()) {
+            Toast.makeText(this, "모임 이름과 주제는 필수입니다.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -97,13 +98,14 @@ public class EditClubActivity extends BaseActivity {
         try {
             capacity = Integer.parseInt(etCapacity.getText().toString().trim());
         } catch (NumberFormatException e) {
-            capacity = 0; // 혹은 에러 처리
+            capacity = 0;
         }
 
         // 객체 내용 업데이트
         currentClub.setName(name);
-        currentClub.setStatus(status);
-        currentClub.setCurrentBook(book);
+        currentClub.setTopic(topic); // [수정] 주제 업데이트
+        // currentClub.setStatus(...) -> 기존 상태 유지 (수정 안 함)
+
         currentClub.setCapacity(capacity);
         currentClub.setStartDate(startDate);
         currentClub.setEndDate(endDate);
@@ -114,13 +116,12 @@ public class EditClubActivity extends BaseActivity {
 
         if (isUpdated) {
             Toast.makeText(this, "수정되었습니다.", Toast.LENGTH_SHORT).show();
-            finish(); // 수정 마치고 이전 화면(상세 페이지)으로 복귀
+            finish(); // 상세 화면으로 복귀
         } else {
             Toast.makeText(this, "수정 실패", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // 날짜 선택 다이얼로그
     private void showDatePickerDialog(final EditText editText) {
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
