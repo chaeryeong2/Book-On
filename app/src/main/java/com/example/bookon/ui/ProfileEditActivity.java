@@ -44,15 +44,24 @@ public class ProfileEditActivity extends BaseActivity {
 
         btnSave.setOnClickListener(v -> saveMyInfo());
 
+        // ---------------------------------------------------------
+        // [핵심 수정] 로그아웃 버튼 리스너
+        // ---------------------------------------------------------
         btnLogout.setOnClickListener(v -> {
-            // 저장된 userId 지우기
+            // 1. [기존 로직] 숫자 userId 저장된 파일 정리 ("user")
             getSharedPreferences("user", MODE_PRIVATE)
                     .edit()
-                    .clear()   // 또는 .remove("userId")
+                    .clear()
+                    .apply();
+
+            // 2. [핵심 추가] 자동 로그인용 CurrentUserId(String) 정리 ("AppSettings")
+            getSharedPreferences("AppSettings", MODE_PRIVATE)
+                    .edit()
+                    .remove("CurrentUserId") // 이 키를 지워야 SplashActivity가 로그아웃 상태로 인식
                     .apply();
 
             Intent intent = new Intent(this, LoginActivity.class);
-            // [추가] 로그아웃 시 뒤로 가기 막기 (선택 사항)
+            // 모든 이전 스택을 지우고 새 작업을 시작
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
@@ -76,33 +85,28 @@ public class ProfileEditActivity extends BaseActivity {
         });
 
         // ---------------------------------------------------------
-        // [추가된 부분] 하단 네비게이션 바 설정
+        // 하단 네비게이션 바 설정 (기존 로직 유지)
         // ---------------------------------------------------------
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
-        // 현재 탭(내 정보) 활성화
         bottomNav.setSelectedItemId(R.id.nav_profile);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
             if (itemId == R.id.nav_home) {
-                // 홈(내 서재)으로 이동
                 startActivity(new Intent(this, HomeActivity.class));
-                overridePendingTransition(0, 0); // 애니메이션 제거
+                overridePendingTransition(0, 0);
                 return true;
             } else if (itemId == R.id.nav_recruit) {
-                // 모집중으로 이동
                 startActivity(new Intent(this, RecruitActivity.class));
                 overridePendingTransition(0, 0);
                 return true;
             } else if (itemId == R.id.nav_schedule) {
-                // 일정으로 이동
                 startActivity(new Intent(this, ScheduleActivity.class));
                 overridePendingTransition(0, 0);
                 return true;
             } else if (itemId == R.id.nav_profile) {
-                // 이미 현재 화면임
                 return true;
             }
             return false;
@@ -116,7 +120,7 @@ public class ProfileEditActivity extends BaseActivity {
 
         if (cursor.moveToFirst()) {
             etNick.setText(cursor.getString(0));
-            etIntro.setText(cursor.getString(1)); // intro 없으면 null일 수 있음
+            etIntro.setText(cursor.getString(1));
         }
         cursor.close();
     }
