@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+// 사용자 정보 테이블(users) 관리를 위한 헬퍼 클래스
 public class LoginHelper extends SQLiteOpenHelper {
     public LoginHelper(Context context) {
         super(context, "userDB.db", null, 1);

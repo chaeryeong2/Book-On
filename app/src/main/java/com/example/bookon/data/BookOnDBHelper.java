@@ -4,9 +4,10 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+// 모임 및 도서 정보를 저장하는 메인 DBhelper
 public class BookOnDBHelper extends SQLiteOpenHelper {
 
-    // [수정] member 테이블 변경 (9 -> 10)
+    //DB 구조 변경 시 버전을 올려야 함. 현재 ver.10
     public BookOnDBHelper(Context context) {
         super(context, "BookOn.db", null, 10);
     }
@@ -27,6 +28,7 @@ public class BookOnDBHelper extends SQLiteOpenHelper {
                 "schedule_start TEXT," +
                 "cycle_weeks INTEGER)"
         );
+        // 2. 멤버 테이블
         db.execSQL(
                 "CREATE TABLE members (" +
                         "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -36,7 +38,7 @@ public class BookOnDBHelper extends SQLiteOpenHelper {
                         ")"
         );
 
-        // 3. 책 테이블 (sequence 추가!)
+        // 3. 책 테이블
         db.execSQL("CREATE TABLE book (" +
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "club_id INTEGER NOT NULL," +
@@ -48,6 +50,7 @@ public class BookOnDBHelper extends SQLiteOpenHelper {
         );
     }
 
+    // DB 버전이 변경될 때 호출되어 기존 테이블을 삭제하고 새로 생성함.
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS clubs");
