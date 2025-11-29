@@ -6,9 +6,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class BookOnDBHelper extends SQLiteOpenHelper {
 
-    // [수정] BookDBHelper 통합 및 스키마 변경으로 버전 업 (8 -> 9)
+    // [수정] member 테이블 변경 (9 -> 10)
     public BookOnDBHelper(Context context) {
-        super(context, "BookOn.db", null, 9);
+        super(context, "BookOn.db", null, 10);
     }
 
     @Override
@@ -27,12 +27,13 @@ public class BookOnDBHelper extends SQLiteOpenHelper {
                 "schedule_start TEXT," +
                 "cycle_weeks INTEGER)"
         );
-
-        // 2. 멤버 테이블
-        db.execSQL("CREATE TABLE members(" +
-                "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "user_id TEXT," +
-                "club_id INTEGER)"
+        db.execSQL(
+                "CREATE TABLE members (" +
+                        "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        "user_id TEXT NOT NULL," +
+                        "club_id INTEGER NOT NULL," +
+                        "sequence INTEGER DEFAULT 0" +
+                        ")"
         );
 
         // 3. 책 테이블 (sequence 추가!)

@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
         boolean isDark = prefs.getBoolean("dark_mode", false);
 
         AppCompatDelegate.setDefaultNightMode(
