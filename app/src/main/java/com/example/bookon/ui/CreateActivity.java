@@ -14,9 +14,9 @@ import com.example.bookon.data.DataManager;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class CreateActivity extends BaseActivity { // BaseActivity 상속 유지
+// 새로운 모임 생성 화면
+public class CreateActivity extends BaseActivity {
 
-    // [추가] etTopic 변수 추가
     private EditText etClubName, etTopic, etCapacity, etStartDate, etEndDate, etDescription;
     private Button btnCreateClubSubmit;
     private Calendar calendar = Calendar.getInstance();
@@ -26,29 +26,26 @@ public class CreateActivity extends BaseActivity { // BaseActivity 상속 유지
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
-        // 1. 뷰 연결
         etClubName = findViewById(R.id.et_club_name);
-        etTopic = findViewById(R.id.et_club_topic); // [추가] XML ID와 연결
+        etTopic = findViewById(R.id.et_club_topic);
         etCapacity = findViewById(R.id.et_capacity);
         etStartDate = findViewById(R.id.et_start_date);
         etEndDate = findViewById(R.id.et_end_date);
         etDescription = findViewById(R.id.et_description);
         btnCreateClubSubmit = findViewById(R.id.btn_create_club_submit);
 
-        // 2. 날짜 선택 리스너 연결
         etStartDate.setOnClickListener(v -> showDatePickerDialog(etStartDate));
         etEndDate.setOnClickListener(v -> showDatePickerDialog(etEndDate));
 
-        // 3. 모임 만들기 버튼 클릭 리스너
         btnCreateClubSubmit.setOnClickListener(v -> {
             String name = etClubName.getText().toString().trim();
-            String topic = etTopic.getText().toString().trim(); // [추가] 주제 가져오기
+            String topic = etTopic.getText().toString().trim();
             String capacityStr = etCapacity.getText().toString().trim();
             String startDate = etStartDate.getText().toString().trim();
             String endDate = etEndDate.getText().toString().trim();
             String description = etDescription.getText().toString().trim();
 
-            // 유효성 검사 (주제 포함)
+            // 유효성 검사
             if (name.isEmpty() || topic.isEmpty() || capacityStr.isEmpty() || startDate.isEmpty() || endDate.isEmpty()) {
                 Toast.makeText(CreateActivity.this, "필수 정보를 모두 입력해주세요.", Toast.LENGTH_SHORT).show();
                 return;

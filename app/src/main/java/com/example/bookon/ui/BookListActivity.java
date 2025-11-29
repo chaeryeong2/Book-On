@@ -20,15 +20,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
+// 모임 내 책 목록 확인 및 삭제 화면
 public class BookListActivity extends AppCompatActivity {
     private FloatingActionButton fabCreateBook;
     TextView clubName;
     private ListView lvBooks;
     private ImageButton btnBack;
-
-    // [수정] BookDBHelper 변수 삭제
-    // private BookDBHelper dbHelper;
-
     private BookAdapter adapter;
     private List<Book> bookList;
     private int clubId;
@@ -36,7 +33,7 @@ public class BookListActivity extends AppCompatActivity {
     private int lastClickPosition = -1;
 
     private String currentUserId;
-    private String currentClubStatus = "모집중";
+    private String currentClubStatus = "모집중"; // 현재 모임 상태
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,15 +52,13 @@ public class BookListActivity extends AppCompatActivity {
         clubId = getIntent().getIntExtra("club_id", -1);
         clubName.setText("\uD83D\uDCDA " + name);
 
-        // [수정] dbHelper 생성 코드 삭제
-        // dbHelper = new BookDBHelper(this);
-
         lvBooks = findViewById(R.id.lv_book_list);
 
         bookList = new ArrayList<>();
         adapter = new BookAdapter(this, bookList);
         lvBooks.setAdapter(adapter);
 
+        // 책 목록 아이템 클릭 리스너 (더블 탭 시 삭제)
         lvBooks.setOnItemClickListener((parent, view, position, id) -> {
             Book book = bookList.get(position);
 
@@ -80,7 +75,6 @@ public class BookListActivity extends AppCompatActivity {
             long now = System.currentTimeMillis();
 
             if (position == lastClickPosition && (now - lastClickTime) < 400) {
-                // [수정] DataManager를 통해 삭제
                 int deleted = DataManager.getInstance(this).deleteBook(book.getId());
 
                 if (deleted > 0) {
@@ -100,6 +94,7 @@ public class BookListActivity extends AppCompatActivity {
             }
         });
 
+        // 책 추가 FAB 클릭 리스너
         fabCreateBook = findViewById(R.id.fab_create_book);
         fabCreateBook.setOnClickListener(v -> {
             if ("진행중".equals(currentClubStatus)) {
@@ -132,7 +127,6 @@ public class BookListActivity extends AppCompatActivity {
         if (clubId == -1) return;
 
         bookList.clear();
-        // [수정] DataManager를 통해 책 목록 조회
         bookList.addAll(DataManager.getInstance(this).getBooksByClub(clubId));
         adapter.notifyDataSetChanged();
     }

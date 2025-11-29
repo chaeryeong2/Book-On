@@ -18,6 +18,7 @@ import com.example.bookon.data.DataManager; // [변경]
 import com.example.bookon.data.LoginHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+// 내 정보 및 프로필 수정 화면
 public class ProfileEditActivity extends BaseActivity {
     EditText etNick, etIntro;
     Button btnSave;
@@ -126,7 +127,7 @@ public class ProfileEditActivity extends BaseActivity {
             String currentLoginId = prefs.getString("CurrentUserId", "");
 
             if (!currentLoginId.isEmpty()) {
-                // [수정] DataManager를 통해 책 주인 이름 변경
+                // DataManager를 통해 책 주인 이름 변경
                 DataManager.getInstance(this).updateBookOwnerName(currentLoginId, newNick);
             }
         }

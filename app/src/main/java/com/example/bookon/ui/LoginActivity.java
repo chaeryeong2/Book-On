@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.bookon.R;
 import com.example.bookon.data.LoginHelper;
 
+// 로그인 화면
 public class LoginActivity extends BaseActivity {
     EditText etEmail;
     EditText etPw;
@@ -81,15 +82,11 @@ public class LoginActivity extends BaseActivity {
                     .apply(); // userId 저장
             Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show();
 
-            // -----------------------------------------------------------
-            // [핵심 추가] 로그인한 아이디를 폰에 저장 (HomeActivity 등에서 쓰기 위해)
-            // -----------------------------------------------------------
+            // 로그인한 아이디를 폰에 저장
             SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
-            // DataManager가 String 아이디("ksk")로 비교하므로 입력한 idInput을 저장합니다.
             editor.putString("CurrentUserId", idInput);
             editor.apply(); // 저장 실행
-            // -----------------------------------------------------------
 
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);

@@ -14,10 +14,10 @@ import com.example.bookon.data.DataManager;
 import java.util.Calendar;
 import java.util.Locale;
 
+// 모임 정보 수정 화면
 public class EditClubActivity extends BaseActivity {
 
     private int clubId;
-    // [수정] etStatus 삭제, etBook -> etTopic 변경
     private EditText etName, etTopic, etCapacity, etStartDate, etEndDate, etDesc;
     private Button btnSave;
     private Club currentClub;
@@ -28,7 +28,7 @@ public class EditClubActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_club);
 
-        // 1. Intent로 넘겨받은 club_id 확인
+        // Intent로 넘겨받은 club_id 확인
         clubId = getIntent().getIntExtra("club_id", -1);
         if (clubId == -1) {
             Toast.makeText(this, "오류: 모임 정보를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show();
@@ -36,23 +36,20 @@ public class EditClubActivity extends BaseActivity {
             return;
         }
 
-        // 2. 뷰 연결 (etStatus 제거됨)
         etName = findViewById(R.id.et_edit_name);
-        etTopic = findViewById(R.id.et_edit_topic); // [수정] XML ID와 일치시켜야 함
+        etTopic = findViewById(R.id.et_edit_topic);
         etCapacity = findViewById(R.id.et_edit_capacity);
         etStartDate = findViewById(R.id.et_edit_start_date);
         etEndDate = findViewById(R.id.et_edit_end_date);
         etDesc = findViewById(R.id.et_edit_desc);
         btnSave = findViewById(R.id.btn_save_changes);
 
-        // 3. 기존 데이터 불러와서 화면에 채우기
+        // 기존 데이터 불러와서 화면에 채우기
         loadCurrentData();
 
-        // 4. 날짜 선택 이벤트 연결
         etStartDate.setOnClickListener(v -> showDatePickerDialog(etStartDate));
         etEndDate.setOnClickListener(v -> showDatePickerDialog(etEndDate));
 
-        // 5. 저장 버튼 클릭 이벤트
         btnSave.setOnClickListener(v -> updateClub());
     }
 
@@ -65,11 +62,10 @@ public class EditClubActivity extends BaseActivity {
         if (currentClub != null) {
             etName.setText(currentClub.getName());
 
-            // [수정] 주제(Topic) 불러오기
+            // 주제(Topic) 불러오기
             etTopic.setText(currentClub.getTopic());
 
-            // [참고] status는 화면에 표시하지 않고, 객체 내부에만 유지함
-
+            // status는 화면에 표시하지 않고, 객체 내부에만 유지함
             etCapacity.setText(String.valueOf(currentClub.getCapacity()));
             etStartDate.setText(currentClub.getStartDate());
             etEndDate.setText(currentClub.getEndDate());
@@ -83,12 +79,12 @@ public class EditClubActivity extends BaseActivity {
     private void updateClub() {
         // 입력된 값 가져오기
         String name = etName.getText().toString().trim();
-        String topic = etTopic.getText().toString().trim(); // [수정] 주제 가져오기
+        String topic = etTopic.getText().toString().trim();
         String desc = etDesc.getText().toString().trim();
         String startDate = etStartDate.getText().toString().trim();
         String endDate = etEndDate.getText().toString().trim();
 
-        // [수정] 유효성 검사 (Status 제거, Topic 추가)
+        // 유효성 검사
         if (name.isEmpty() || topic.isEmpty()) {
             Toast.makeText(this, "모임 이름과 주제는 필수입니다.", Toast.LENGTH_SHORT).show();
             return;
@@ -103,8 +99,7 @@ public class EditClubActivity extends BaseActivity {
 
         // 객체 내용 업데이트
         currentClub.setName(name);
-        currentClub.setTopic(topic); // [수정] 주제 업데이트
-        // currentClub.setStatus(...) -> 기존 상태 유지 (수정 안 함)
+        currentClub.setTopic(topic);
 
         currentClub.setCapacity(capacity);
         currentClub.setStartDate(startDate);

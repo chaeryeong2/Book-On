@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.bookon.R;
 import com.example.bookon.data.LoginHelper;
 
+// 회원가입 화면
 public class SignupActivity extends BaseActivity {
     EditText etName;
     EditText etEmail;
