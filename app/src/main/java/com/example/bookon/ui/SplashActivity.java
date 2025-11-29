@@ -13,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.bookon.R;
 
+// 앱 시작 화면 (자동 로그인 및 초기화 체크)
 public class SplashActivity extends BaseActivity {
 
     private static final long SPLASH_TIME_OUT = 2000;
@@ -20,16 +21,6 @@ public class SplashActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // [수정] BaseActivity와 맞춤: "settings", "dark_mode"
-//        SharedPreferences settings = getSharedPreferences("AppSettings", MODE_PRIVATE);
-//        boolean isDark = settings.getBoolean("dark_mode", false);
-//
-//        if (isDark) {
-//            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-//        } else {
-//            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-//        }
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_splash);
@@ -43,7 +34,7 @@ public class SplashActivity extends BaseActivity {
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            // [유지] 로그인 정보는 "AppSettings"에서 확인
+            // 로그인 정보는 "AppSettings"에서 확인
             SharedPreferences appPrefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
             String currentUserId = appPrefs.getString("CurrentUserId", null);
 

@@ -13,6 +13,7 @@ import com.example.bookon.R;
 
 import java.util.ArrayList;
 
+// 책 교환 순서 RecyclerView 어댑터
 public class ExchangeAdapter extends RecyclerView.Adapter<ExchangeAdapter.ViewHolder> {
 
     private ArrayList<String> memberList;
@@ -24,7 +25,6 @@ public class ExchangeAdapter extends RecyclerView.Adapter<ExchangeAdapter.ViewHo
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // [주의] 레이아웃 파일 이름이 item_exchange_order.xml 이라고 가정합니다.
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_exchange_order, parent, false);
         return new ViewHolder(view);
     }
@@ -54,7 +54,6 @@ public class ExchangeAdapter extends RecyclerView.Adapter<ExchangeAdapter.ViewHo
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            // 보내주신 XML의 ID와 연결
             tvMemberName = itemView.findViewById(R.id.tv_member_name);
             ivNextArrow = itemView.findViewById(R.id.iv_next_arrow);
         }

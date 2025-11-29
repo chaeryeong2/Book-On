@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+// 일정 및 교환 순서 확인 화면
 public class ScheduleActivity extends BaseActivity {
 
     private CalendarView calendarView;
@@ -35,7 +36,7 @@ public class ScheduleActivity extends BaseActivity {
     private int clubId = -1;
     private Club currentClub;
     private int totalBookCount = 0;
-    private LoginHelper loginHelper; // [추가] 닉네임 조회용
+    private LoginHelper loginHelper;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
@@ -44,8 +45,7 @@ public class ScheduleActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule);
 
-        // 1. 초기화
-        loginHelper = new LoginHelper(this); // [추가]
+        loginHelper = new LoginHelper(this);
 
         clubId = getIntent().getIntExtra("club_id", -1);
         if (clubId == -1) {
@@ -81,16 +81,16 @@ public class ScheduleActivity extends BaseActivity {
     }
 
     private void loadScheduleData() {
-        // [수정] 1. 멤버 ID 리스트 가져오기
+        // 멤버 ID 리스트 가져오기
         ArrayList<String> memberIds = DataManager.getInstance(this).getClubMemberIds(clubId);
 
-        // [수정] 2. ID를 닉네임으로 변환
+        // ID를 닉네임으로 변환
         ArrayList<String> memberNicknames = new ArrayList<>();
         for (String id : memberIds) {
             memberNicknames.add(getNickname(id)); // ID -> 닉네임 변환
         }
 
-        // [수정] 3. 닉네임 리스트를 어댑터에 전달
+        // 닉네임 리스트를 어댑터에 전달
         ExchangeAdapter adapter = new ExchangeAdapter(memberNicknames);
         rvExchangeOrder.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvExchangeOrder.setAdapter(adapter);
@@ -105,10 +105,10 @@ public class ScheduleActivity extends BaseActivity {
         checkEvent(calendarView.getDate());
     }
 
-    // [추가] ID로 닉네임 조회하는 헬퍼 메서드
+    // ID로 닉네임 조회하는 헬퍼 메서드
     private String getNickname(String userId) {
         SQLiteDatabase db = loginHelper.getReadableDatabase();
-        String nickname = userId; // 기본값은 아이디
+        String nickname = userId;
 
         Cursor cursor = db.rawQuery("SELECT nickname FROM users WHERE username = ?", new String[]{userId});
 

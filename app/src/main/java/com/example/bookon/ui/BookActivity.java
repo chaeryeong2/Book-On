@@ -16,11 +16,11 @@ import com.example.bookon.R;
 import com.example.bookon.data.DataManager; // [변경]
 import com.example.bookon.data.LoginHelper;
 
+// 모임에 책 등록 화면
 public class BookActivity extends AppCompatActivity {
     private EditText etTitle, etAuthor;
     private Button btnRegister;
     private ImageButton btnBack;
-    // private BookDBHelper dbHelper; // [삭제]
     private LoginHelper userHelper;
     private long clubId;
 
@@ -30,7 +30,6 @@ public class BookActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_book);
 
-        // dbHelper = new BookDBHelper(this); // [삭제]
         userHelper = new LoginHelper(this);
 
         clubId = getIntent().getIntExtra("club_id", -1);
@@ -65,7 +64,6 @@ public class BookActivity extends AppCompatActivity {
             cursor.close();
         }
 
-        // [수정] DataManager를 통해 책 등록 (성공 시 rowId, 실패 시 -1 반환)
         long id = DataManager.getInstance(this).insertBook(clubId, title, author, nickname, currentUserId);
 
         if (id == -1) {

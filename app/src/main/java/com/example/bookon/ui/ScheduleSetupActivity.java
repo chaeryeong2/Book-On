@@ -18,23 +18,23 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Locale;
 
+// 모임 시작을 위한 일정 및 순서 설정 화면
 public class ScheduleSetupActivity extends BaseActivity {
 
     private int clubId;
     private String selectedDateStr = "";
-    private ArrayList<String> memberList; // 멤버 ID 리스트 (로직용)
-    private LoginHelper loginHelper;      // [추가] 닉네임 조회용 DB 헬퍼
+    private ArrayList<String> memberList;
+    private LoginHelper loginHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_setup);
 
-        loginHelper = new LoginHelper(this); // [추가] 초기화
+        loginHelper = new LoginHelper(this);
 
         clubId = getIntent().getIntExtra("club_id", -1);
 
-        // 멤버 불러오기 (여기엔 ID들이 들어있음)
         memberList = DataManager.getInstance(this).getClubMemberIds(clubId);
 
         Button btnDate = findViewById(R.id.btn_pick_date);
@@ -43,7 +43,7 @@ public class ScheduleSetupActivity extends BaseActivity {
         TextView tvPreview = findViewById(R.id.tv_order_preview);
         Button btnConfirm = findViewById(R.id.btn_confirm_schedule);
 
-        updatePreview(tvPreview); // 초기 순서 표시
+        updatePreview(tvPreview);
 
         // 1. 날짜 선택
         btnDate.setOnClickListener(v -> {
@@ -56,7 +56,7 @@ public class ScheduleSetupActivity extends BaseActivity {
 
         // 2. 랜덤 섞기
         btnRandom.setOnClickListener(v -> {
-            Collections.shuffle(memberList); // 리스트 섞기 (ID 순서가 섞임)
+            Collections.shuffle(memberList); // 리스트 섞기
             updatePreview(tvPreview);        // 화면 갱신
             Toast.makeText(this, "순서가 변경되었습니다.", Toast.LENGTH_SHORT).show();
         });
@@ -69,7 +69,7 @@ public class ScheduleSetupActivity extends BaseActivity {
             }
             int weeks = Integer.parseInt(etWeeks.getText().toString());
 
-            // DB에 저장 (ID 리스트를 저장해야 하므로 memberList 그대로 사용)
+            // DB에 저장
             DataManager.getInstance(this).setClubSchedule(clubId, selectedDateStr, weeks, memberList);
 
             Toast.makeText(this, "모임이 시작되었습니다!", Toast.LENGTH_SHORT).show();
@@ -77,7 +77,7 @@ public class ScheduleSetupActivity extends BaseActivity {
         });
     }
 
-    // [수정] ID 리스트를 돌면서 닉네임으로 변환하여 표시
+    // ID 리스트를 돌면서 닉네임으로 변환하여 표시
     private void updatePreview(TextView tv) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < memberList.size(); i++) {
@@ -91,7 +91,7 @@ public class ScheduleSetupActivity extends BaseActivity {
         tv.setText(sb.toString());
     }
 
-    // [추가] ID(이메일)로 닉네임을 조회하는 헬퍼 메서드
+    // ID(이메일)로 닉네임을 조회하는 헬퍼 메서드
     private String getNickname(String userId) {
         SQLiteDatabase db = loginHelper.getReadableDatabase();
         String nickname = userId; // 기본값은 아이디(못 찾을 경우 대비)

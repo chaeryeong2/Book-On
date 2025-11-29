@@ -13,6 +13,7 @@ import com.example.bookon.data.Club;
 
 import java.util.ArrayList;
 
+// 모임 목록 카드용 어댑터
 public class ClubAdapter extends BaseAdapter {
 
     private Context context;
@@ -39,7 +40,6 @@ public class ClubAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.item_club_card, parent, false);
         }
 
-        // 뷰 연결
         TextView tvClubName = convertView.findViewById(R.id.tv_club_name);
         TextView tvCurrentBook = convertView.findViewById(R.id.tv_current_book);
         TextView tvMemberCount = convertView.findViewById(R.id.tv_member_count);
@@ -49,7 +49,6 @@ public class ClubAdapter extends BaseAdapter {
         ImageView ivBookIcon = convertView.findViewById(R.id.iv_book_icon);
         ImageView ivMemberIcon = convertView.findViewById(R.id.iv_member_icon);
 
-        // 데이터 가져오기
         Club club = clubList.get(position);
 
         tvClubName.setText(club.getName());
@@ -58,23 +57,21 @@ public class ClubAdapter extends BaseAdapter {
 
         String statusStr = club.getStatus();
 
-        // [수정] 텍스트 표시 로직: DB 값이 "마감됨"이면 "마감됨"으로 표시
+        // 상태 텍스트 표시 로직
         if ("마감됨".equals(statusStr)) {
             tvClubStatus.setText("마감됨");
         } else {
             tvClubStatus.setText(statusStr); // 모집중, 진행중
         }
 
-        // ---------------------------------------------------
         // 방장 여부에 따른 배지 표시
-        // ---------------------------------------------------
         if (club.isOwner()) {
             tvOwnerBadge.setVisibility(View.VISIBLE);
         } else {
             tvOwnerBadge.setVisibility(View.GONE);
         }
 
-        // [수정] 상태에 따른 칩 색상 변경
+        // 상태에 따른 칩 색상 변경
         if ("모집중".equals(statusStr)) {
             // 파란색 (Primary)
             tvClubStatus.setBackgroundTintList(context.getColorStateList(R.color.brand_primary));

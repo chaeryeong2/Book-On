@@ -14,6 +14,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
+// 모집중인 모임 목록 화면
 public class RecruitActivity extends BaseActivity {
 
     private ListView lvRecruitList;
@@ -25,12 +26,10 @@ public class RecruitActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recruit);
 
-        // 1. 뷰 연결
         lvRecruitList = findViewById(R.id.lv_recruit_list);
         fabCreateClub = findViewById(R.id.fab_create_club);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
-        // 2. [수정] 리스트 클릭 이벤트 -> 상세 화면(ClubActivity) 연결
         lvRecruitList.setOnItemClickListener((parent, view, position, id) -> {
             Club clickedClub = clubList.get(position);
             Intent intent = new Intent(RecruitActivity.this, ClubActivity.class);
@@ -38,13 +37,11 @@ public class RecruitActivity extends BaseActivity {
             startActivity(intent);
         });
 
-        // 3. 모임 만들기 버튼 클릭 이벤트
         fabCreateClub.setOnClickListener(v -> {
             Intent intent = new Intent(RecruitActivity.this, CreateActivity.class);
             startActivity(intent);
         });
 
-        // 4. 하단 네비게이션 설정
         bottomNav.setSelectedItemId(R.id.nav_recruit);
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -76,11 +73,11 @@ public class RecruitActivity extends BaseActivity {
     }
 
     private void loadRecruitingData() {
-        // [수정] 현재 로그인한 ID 가져오기
+        // 현재 로그인한 ID 가져오기
         SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
         String currentUserId = prefs.getString("CurrentUserId", "testUser");
 
-        // [수정] ID를 넘겨줌
+        // ID를 넘겨줌
         clubList = DataManager.getInstance(this).getRecruitingClubs(currentUserId);
 
         ClubAdapter adapter = new ClubAdapter(this, clubList);

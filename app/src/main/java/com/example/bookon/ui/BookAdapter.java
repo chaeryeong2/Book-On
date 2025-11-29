@@ -14,6 +14,7 @@ import com.example.bookon.data.Book;
 
 import java.util.List;
 
+// 책 리스트뷰 어댑터
 public class BookAdapter extends ArrayAdapter<Book> {
     public BookAdapter(Context context, List<Book> books) {
         super(context, 0, books);

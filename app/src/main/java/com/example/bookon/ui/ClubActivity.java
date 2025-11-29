@@ -16,13 +16,12 @@ import com.example.bookon.R;
 import com.example.bookon.data.Club;
 import com.example.bookon.data.DataManager;
 
+// 모집중 모임 상세 및 참여 화면
 public class ClubActivity extends BaseActivity {
 
     private int clubId;
     private Club currentClub;
     private String currentUserId;
-
-    // UI 요소
     private LinearLayout layoutOwnerActions;
     private Button btnEdit, btnDelete, btnJoin, btnStart;
     private ImageButton btnBack;
@@ -39,7 +38,6 @@ public class ClubActivity extends BaseActivity {
         SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
         currentUserId = prefs.getString("CurrentUserId", "");
 
-        // 뷰 연결
         tvName = findViewById(R.id.tv_detail_name);
         tvStatus = findViewById(R.id.tv_detail_status);
         tvTopic = findViewById(R.id.tv_topic);
@@ -54,10 +52,7 @@ public class ClubActivity extends BaseActivity {
         btnBack = findViewById(R.id.btn_back);
         btnStart = findViewById(R.id.btn_start_club);
 
-        // ---------------------------------------------------------------
         // 버튼 리스너 설정
-        // ---------------------------------------------------------------
-
         btnBack.setOnClickListener(v -> finish());
 
         btnDelete.setOnClickListener(v -> deleteClub());
@@ -74,7 +69,7 @@ public class ClubActivity extends BaseActivity {
             startActivity(intent);
         });
 
-        // [참여하기] 버튼 클릭 시 (더블 체크)
+        // 참여하기 버튼 클릭 시
         btnJoin.setOnClickListener(v -> {
             if (currentClub == null) return;
 
@@ -114,14 +109,11 @@ public class ClubActivity extends BaseActivity {
             int currentCount = DataManager.getInstance(this).getMemberCount(clubId);
 
             tvName.setText(currentClub.getName());
-            tvTopic.setText(currentClub.getTopic()); // 주제
+            tvTopic.setText(currentClub.getTopic());
             tvCapacity.setText(currentCount + " / " + currentClub.getCapacity() + "명");
             tvDate.setText(currentClub.getStartDate() + " ~ " + currentClub.getEndDate());
             tvDesc.setText(currentClub.getDescription());
 
-            // ----------------------------------------------------
-            // [수정] 상태 뱃지(tvStatus) 텍스트 및 색상 동적 변경
-            // ----------------------------------------------------
             String displayStatus = currentClub.getStatus(); // 기본은 DB 값
 
             // 1. 상태 결정 로직
@@ -146,16 +138,13 @@ public class ClubActivity extends BaseActivity {
                 tvStatus.setBackgroundTintList(getColorStateList(R.color.text_secondary));
             }
 
-            // ----------------------------------------------------
-            // [기존 로직 유지] 버튼 표시 제어
-            // ----------------------------------------------------
+            // 버튼 표시 제어
             if (currentClub.isOwner()) {
                 // [CASE 1] 방장
                 layoutOwnerActions.setVisibility(View.VISIBLE);
                 btnJoin.setVisibility(View.GONE);
 
-                // '모집중'일 때만 시작 버튼 보임 (마감이어도 시작은 가능하게 할지, 아닐지 선택)
-                // 여기서는 '모집중' 이거나 '마감'(인원꽉참) 이면 시작 가능하게 설정
+                // '모집중' 또는 '마감됨' 상태일 때만 시작 버튼 보임
                 if ("모집중".equals(displayStatus) || "마감됨".equals(displayStatus)) {
                     btnStart.setVisibility(View.VISIBLE);
                 } else {
