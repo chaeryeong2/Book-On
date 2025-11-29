@@ -10,7 +10,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.appcompat.app.AppCompatDelegate; // 필요 시 추가
 
 import com.example.bookon.R;
 
@@ -23,14 +22,14 @@ public class SplashActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         // [수정] BaseActivity와 맞춤: "settings", "dark_mode"
-        SharedPreferences settings = getSharedPreferences("settings", MODE_PRIVATE);
-        boolean isDark = settings.getBoolean("dark_mode", false);
-
-        if (isDark) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
+//        SharedPreferences settings = getSharedPreferences("AppSettings", MODE_PRIVATE);
+//        boolean isDark = settings.getBoolean("dark_mode", false);
+//
+//        if (isDark) {
+//            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+//        } else {
+//            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+//        }
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_splash);

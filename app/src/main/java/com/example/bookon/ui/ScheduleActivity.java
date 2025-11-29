@@ -141,7 +141,7 @@ public class ScheduleActivity extends BaseActivity {
 
             if (diffDays == 0) {
                 tvDateEvent.setText("🚀 독서 모임 시작일입니다!");
-                tvDateEvent.setTextColor(getColor(R.color.brand_primary));
+                tvDateEvent.setTextColor(getColor(R.color.brand_secondary));
                 return;
             }
 
@@ -156,7 +156,7 @@ public class ScheduleActivity extends BaseActivity {
             if (isExchangeDay) {
                 if (round < totalBookCount) {
                     tvDateEvent.setText("📚 " + round + "차 도서 교환일입니다!");
-                    tvDateEvent.setTextColor(getColor(R.color.brand_primary));
+                    tvDateEvent.setTextColor(getColor(R.color.brand_secondary));
                 } else if (round == totalBookCount) {
                     tvDateEvent.setText("🎉 마지막 교환일 (모임 종료)!");
                     tvDateEvent.setTextColor(getColor(R.color.brand_secondary));

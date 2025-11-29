@@ -55,7 +55,7 @@ public class ProfileEditActivity extends BaseActivity {
             startActivity(intent);
         });
 
-        boolean isDark = getSharedPreferences("settings", MODE_PRIVATE).getBoolean("dark_mode", false);
+        boolean isDark = getSharedPreferences("AppSettings", MODE_PRIVATE).getBoolean("dark_mode", false);
         switchDark.setChecked(isDark);
         switchDark.setOnCheckedChangeListener((buttonView, checked) -> {
             if (checked) {
@@ -63,7 +63,7 @@ public class ProfileEditActivity extends BaseActivity {
             } else {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             }
-            getSharedPreferences("settings", MODE_PRIVATE).edit().putBoolean("dark_mode", checked).apply();
+            getSharedPreferences("AppSettings", MODE_PRIVATE).edit().putBoolean("dark_mode", checked).apply();
         });
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
